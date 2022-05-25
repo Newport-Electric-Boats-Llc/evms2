@@ -1,0 +1,1 @@
+../../pycharm/bin/pycharm.sh
