@@ -167,7 +167,7 @@ class DataHolder:
         self.dataholder_log = ''
 
     def log_dataholder(self, logstring):
-        self.dataholder_log = self.dataholder_log + "DH: " + logstring + "\n"
+        self.dataholder_log.append("DH: " + logstring + "\n")
 
     def get_SysLog_str(self, type):
 

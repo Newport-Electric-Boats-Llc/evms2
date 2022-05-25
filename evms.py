@@ -1155,7 +1155,7 @@ class App:
                 log("tenHz_timer_thread, logfile_replay exception: " + str(e))
 
             if self.dat.get_dataholder_log() != '':
-                log(self.dat.get_dataholderlog())
+                log(self.dat.get_dataholder_log())
                 self.dat.clear_dataholder_log()
 
         else:  # process new data from CAN input (we're not replaying a logfile)
@@ -1194,7 +1194,7 @@ class App:
                     log("tenHz_timer_thread: " + str(e))
 
                 if self.dat.get_dataholder_log() != '':
-                    log(self.dat.get_dataholderlog())
+                    log(self.dat.get_dataholder_log())
                     self.dat.clear_dataholder_log()
 
                 self.updateGUI()
