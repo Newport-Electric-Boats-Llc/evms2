@@ -250,9 +250,11 @@ DISCHARGE</property>
                   <object class="GtkGrid" id="gridInstruments">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="valign">start</property>
                     <property name="border_width">0</property>
                     <property name="column_spacing">20</property>
-                    <property name="row_homogeneous">True</property>
+                    <property name="column_homogeneous">True</property>
                     <property name="baseline_row">1</property>
                     <child>
                       <object class="GtkLabel" id="lbl_PackVolts">
@@ -3707,7 +3709,7 @@ Electric Vessel Monitoring System</property>
       </object>
     </child>
   </object>
-  <object class="GtkDialog" id="id_spare_dialog_box">
+  <object class="GtkDialog" id="id_keyboard">
     <property name="can_focus">False</property>
     <property name="halign">center</property>
     <property name="valign">center</property>
