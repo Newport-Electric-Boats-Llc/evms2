@@ -12,7 +12,7 @@ import logging
 import sys
 
 # --- GLOBAL Variables -----
-sw_ver_can = "0.9.3"
+sw_ver_can = "0.9.4"
 
 class evms_can:
     def __init__(self, applog, buffer):

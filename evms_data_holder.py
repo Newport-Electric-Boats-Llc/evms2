@@ -10,7 +10,7 @@ import numpy as np
 
 class DataHolder:
     def __init__(self):
-        self.sw_ver_data = "0.3.1"
+        self.sw_ver_data = "0.3.2"
         self.ac1239_status_1 = ""
         self.rpm = None
         self.mot_rpm = None
