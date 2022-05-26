@@ -167,7 +167,7 @@ class DataHolder:
         self.dataholder_log = ''
 
     def log_dataholder(self, logstring):
-        self.dataholder_log.append("DH: " + logstring + "\n")
+        self.dataholder_log = self.dataholder_log + "DH: " + logstring + "\n"
 
     def get_SysLog_str(self, type):
 
@@ -230,7 +230,7 @@ class DataHolder:
                 tmp_str += ',' + str(self.pid_err_one)
                 tmp_str += ',' + str(self.pid_err_two)
         except Exception as e:
-            log_dataholder("DataHolderError get_data_str: " + str(e))
+            self.log_dataholder("DataHolderError get_data_str: " + str(e))
         return tmp_str
 
     def get_motor_pwr(self):
@@ -243,7 +243,7 @@ class DataHolder:
             else:
                 return 0, 0
         except Exception as e:
-            log_dataholder("DataHolderError get_motor_pwr: at line 109" + str(e))
+            self.log_dataholder("DataHolderError get_motor_pwr: at line 109" + str(e))
 
     def calc_ttd(self, rpm, amps, ah):
         try:

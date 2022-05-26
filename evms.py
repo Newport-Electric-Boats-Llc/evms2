@@ -67,7 +67,7 @@ class App:
 
     def __init__(self):
 
-        self.sw_ver_evms = "0.15.1"
+        self.sw_ver_evms = "0.15.2"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -287,7 +287,7 @@ class App:
         self.bar_history = self.builder.get_object('id_bar_history_combobox')
         #self.keyboard = self.builder.get_object('id_keyboard')
         #self.keyboard_btn = self.builder.get_object('btn_keyboard_dialog')
-        self.dialog = self.builder.get_object('id_spare_dialog_box')
+        self.keyboard_dialog = self.builder.get_object('id_keyboard')
         self.spare_btn = self.builder.get_object('btn_spare_btn')
         self.bar_history_type = 'Power'
         self.wifi_box_list = ''
@@ -494,7 +494,7 @@ class App:
             self.active_txtbox = button
             self.active_txt_buffer = self.active_txtbox.get_buffer()
             self.active_txtbox.set_state_flags(0, True)
-            self.dialog.show()
+            self.keyboard_dialog.show()
 
         def handle_caps():
             if self.shift == True or self.caps == True:
@@ -606,7 +606,7 @@ class App:
                 char = handle_shift(char)
                 handle_caps()
             if char == 'ESCAPE' or char == '\n':
-                self.dialog.hide()
+                self.keyboard_dialog.hide()
             elif char == 'del':
                 self.active_txtbox.set_text(self.active_txt_buffer.get_text()[:-1])
             elif char == 'SHIFT':
@@ -909,7 +909,7 @@ class App:
 
         self.window.show_all()
         #self.keyboard.hide()
-        self.dialog.hide()
+        self.keyboard_dialog.hide()
         self.chrg_label.hide()
         self.notification_icon.hide()
         self.notification_textbox.hide()
@@ -1007,6 +1007,10 @@ class App:
                     line = lines[index]
                     sw_ver = 0
                     while line:
+                        if self.dat.get_dataholder_log() != '':
+                            log(self.dat.get_dataholder_log())
+                            self.dat.clear_dataholder_log()
+
                         line_read = line_read + 1
                         # self.log_message ("processing replay_file line#: " + str(line_read))
                         # log(line)
@@ -1154,9 +1158,6 @@ class App:
             except Exception as e:
                 log("tenHz_timer_thread, logfile_replay exception: " + str(e))
 
-            if self.dat.get_dataholder_log() != '':
-                log(self.dat.get_dataholder_log())
-                self.dat.clear_dataholder_log()
 
         else:  # process new data from CAN input (we're not replaying a logfile)
             while True:
@@ -1164,6 +1165,12 @@ class App:
                     break
 
                 try:
+
+                    if self.dat.get_dataholder_log() != '': # -------------- process any data_holder logs --------------
+                        dhlog_entry = self.dat.get_dataholder_log()
+                        log(dhlog_entry)
+                        self.dat.clear_dataholder_log()
+
                     # -- motor power calculations --
                     self.dat.pwr = self.dat.get_motor_pwr()[0]
                     # print("self.dat.runTime_100ms={:.d}".format(self.dat.runTime_100ms))
@@ -1192,10 +1199,6 @@ class App:
 
                 except Exception as e:
                     log("tenHz_timer_thread: " + str(e))
-
-                if self.dat.get_dataholder_log() != '':
-                    log(self.dat.get_dataholder_log())
-                    self.dat.clear_dataholder_log()
 
                 self.updateGUI()
                 sleep(0.1)
@@ -1333,7 +1336,7 @@ class App:
                     GLib.idle_add(self.lbl_CtlrTemp_val.set_label, "{:4.0f}".format(float(self.dat.mot_ctrl_temp)))
 
             if self.dat.pack_amps is not None:
-                GLib.idle_add(self.lbl_PackAmps_val.set_label, "{:03d}".format(abs(self.dat.pack_amps)))
+                GLib.idle_add(self.lbl_PackAmps_val.set_label, "{:d}".format(abs(self.dat.pack_amps)))
                 GLib.idle_add(self.lbl_PackVolts_val.set_label, str(self.dat.pack_volts))
                 # GLib.idle_add(self.lbl_PackAh_val.set_label, str(self.dat.pack_amp_hrs))
                 # GLib.idle_add(self.lbl_HighTemp_val.set_label, str(self.dat.pack_hi_tmp))
@@ -1381,7 +1384,8 @@ class App:
             else:
                 GLib.idle_add(self.lbl_HDG_val.set_label, "---.-")
 
-            pwr = round(self.dat.get_motor_pwr()[0], 1)
+            pwr = self.dat.get_motor_pwr()[0]
+            pwr = round(pwr, 1)
             if pwr is not None and pwr != '':
                 GLib.idle_add(self.lbl_pwr_val.set_label, "{:04.2f}".format(abs(float(pwr))))
 
