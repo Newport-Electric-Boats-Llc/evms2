@@ -17,7 +17,7 @@ mkdir -p logs/appLogs
 
 #if [[ $1 = "sim" ]]; then
 printf "python3 evms.py vcan0 usb"
-echo Nebcloud! | sudo -S python3 evms.py vcan0 usb
+echo Nebcloud! | sudo -S python3 evms.py can0 usb
 #else
 #  printf "python3 evms.py can0 usb"
 #  echo Nebcloud! | sudo -S python3 evms.py can0 usb
