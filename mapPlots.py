@@ -20,12 +20,12 @@ import sys
 
 max_pwr = 12
 
-maps_dir = '/home/neb/evms/maps/'
-#maps_dir = '/home/walt/evms/maps/'
+maps_dir = '/home/neb/evms2/maps/'
+#maps_dir = '/home/walt/evms2/maps/'
 
 class mapPlots():
     def __init__(self, applog, buffer):
-        self.sw_ver_maps = '0.3.0'
+        self.sw_ver_maps = '0.4.0'
         self.applog = applog
         self.buffer = buffer
         logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO, handlers=[
@@ -56,7 +56,7 @@ class mapPlots():
         try:
             f = open(filename, 'r+')
             f.readline()
-            sw_ver = int(f.readline().split(' ')[-1].rstrip().split('.')[1])
+            sw_ver = 11 #FIXME... int(f.readline().split(' ')[-1].rstrip().split('.')[1])
             if sw_ver < 10:
                 table = np.genfromtxt(filename, dtype=str, delimiter=',', skip_header=4, invalid_raise=False)
                 lats = table[:, 14]
@@ -85,7 +85,7 @@ class mapPlots():
                 file.close()
                 convert_to_DDmmmmm = False
 
-            convert_to_DDmmmmm = True # until May 14th at noon, the self.logs have been written using DD mm.mmmm
+            #convert_to_DDmmmmm = True # until May 14th at noon, the self.logs have been written using DD mm.mmmm
         except Exception as e:
             return 'plot_coords part 1 - ERROR: ' + str(e)
 
@@ -136,9 +136,9 @@ class mapPlots():
                     if self.is_str_Float(ibat):
                         ibat = float(ibat)
                         pwr = abs((float(ibat) * float(vbats[idx])) / 1000) #we don't want to show charging as a negitive power....
-                        colors.append(pwr)
+                        colors.append(idx) #FIXME pwr)
                     else:
-                        colors.append(0)
+                        colors.append(idx) #(0) FIXME ww6/15/22
             elif stat == 'soc':
                 stat_symbol = "%"
                 stat_name = "State of Charge"
@@ -188,8 +188,12 @@ class mapPlots():
             df.lats = df.lats.astype(float)
             df.lons = df.lons.astype(float)
             df[stat_symbol] = df[stat_symbol].astype(float)
+
+            #down sample before plotting
+            df=df.iloc[::10, :]
+
             max_bound = max(abs(df.lats.max() - df.lats.min()), abs(df.lons.min() - df.lons.max())) * 111 #todo: change this const to a variable with a discription of what it is
-            zoom = 14 - np.self.log(max_bound)
+            zoom = 14 - np.log(max_bound)
             y1 = df.lats.min()
             y2 = df.lats.max()
             x1 = df.lons.min()
@@ -198,18 +202,22 @@ class mapPlots():
             yspan = y2 - y1
             center_lon = (xspan/2) + x1
             center_lat = (yspan/2) + y1
+
+
             fig = px.scatter_mapbox(df, lat=df.lats, lon=df.lons, color=df[stat_symbol], color_continuous_scale='rainbow')
-            fig.update_mapboxes(zoom=zoom, center_lat=center_lat, center_lon=center_lon)
-            fig.update_layout(title='Trip Map: ' + stat_name, title_x=0.5, mapbox_style='carto-positron',
-                              font_family='Helvetica',
-                              font_size=10,
-                              font_color='blue',
-                              title_font_family='Helvetica',
-                              title_font_size=20,
-                              title_font_color='blue',
-                              )
-       #     fig.data[0].update(zmin=0.0, zmax=100)
-            fig.write_image(maps_dir + image_name, width=1280, height=640)
+
+            for zoom in range(4,24,4):
+                fig.update_mapboxes(zoom=zoom, center_lat=center_lat, center_lon=center_lon)
+                fig.update_layout(title='Trip Map: ' + stat_name, title_x=0.5, mapbox_style='carto-positron',
+                                  font_family='Helvetica',
+                                  font_size=10,
+                                  font_color='blue',
+                                  title_font_family='Helvetica',
+                                  title_font_size=20,
+                                  title_font_color='blue',
+                                  )
+           #     fig.data[0].update(zmin=0.0, zmax=100)
+                fig.write_image(maps_dir + 'zoomlevel_'+str(zoom)+ '_' + image_name, width=1280, height=640)
         except Exception as e:
             return 'plot_coords part 4 - ERROR: ' + str(e)
             self.usage()

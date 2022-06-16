@@ -22,8 +22,8 @@ sw_ver_remote = '0.2.0'
 
 #host_domain = 'aws.newportelectricboats.com'
 host_domain = 'ec2-54-151-23-47.us-west-1.compute.amazonaws.com'
-release_dir = '/home/neb/evms/'
-backup_dir = '/home/neb/evms/evms_backup_software/'
+release_dir = '/home/neb/evms2/'
+backup_dir = '/home/neb/evms2/evms_backup_software/'
 
 #AWS_KEY_ID = 'AKIASFAXZX3IDFWE4S6E' # nate-neb # Account# 148226293456
 #AWS_SECRET = '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' # nate-neb #Account# 148226293456

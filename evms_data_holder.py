@@ -88,7 +88,7 @@ class DataHolder:
         self.latitude = None
         self.longitude = None
 
-        #self.update_about_page = True
+        self.gps_parse_error_count = 0
 
         ########## RUNTIME VARIABLES ##########
         self.runTime = None

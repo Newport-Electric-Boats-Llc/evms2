@@ -67,7 +67,7 @@ class App:
 
     def __init__(self):
 
-        self.sw_ver_evms = "0.15.2"
+        self.sw_ver_evms = "0.15.3"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -1970,8 +1970,9 @@ class App:
                 # log('self.dat.longitude = msg.longitude = ' + str(self.dat.longitude))
 
         except Exception as e:  # pynmea2.nmea.ChecksumError:
-            log("parse_gps_message: " + str(e))
-            # self.status_msg.emit("Error parsing NMEA sentence.")
+            self.dat.gps_parse_error_count = self.dat.gps_parse_error_count + 1
+            #log("parse_gps_message: " + str(e))
+
 
     def gps_readline(self):
 
@@ -2005,7 +2006,8 @@ class App:
                     #log('DEBUG ' + "gps_readline, parsed GPS: " + str(s))
                 else:
                     if self.gps_from_file == False:
-                        log("NMEA Parse ERROR : " + s.decode('utf-8'))
+                        pass
+                        #log("NMEA Parse ERROR : " + s.decode('utf-8'))
             except Exception as e:
                 log("Exception gps_readline: " + str(e))
                 gpsPort = None
