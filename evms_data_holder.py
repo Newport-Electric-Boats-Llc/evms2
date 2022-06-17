@@ -10,7 +10,7 @@ import numpy as np
 
 class DataHolder:
     def __init__(self):
-        self.sw_ver_data = "0.3.2"
+        self.sw_ver_data = "0.3.4"
         self.ac1239_status_1 = ""
         self.rpm = None
         self.mot_rpm = None
@@ -104,8 +104,8 @@ class DataHolder:
         self.datapoints_needed = 15
         self.valid_datapoints = 0
         self.amps_running_avg = None
-        self.a = 0.9
-        self.b = 0.1
+        self.a = 0.98
+        self.b = 0.02
 
         ########## Colors for gauges, battery, motor temp ###############
         self.spd_R = 0.2
@@ -245,24 +245,33 @@ class DataHolder:
         except Exception as e:
             self.log_dataholder("DataHolderError get_motor_pwr: at line 109" + str(e))
 
+    # def calc_ttd(self, rpm, amps, ah):
+    #     try:
+    #         if  (rpm  is not None and rpm  != "") and \
+    #             (amps is not None and amps != "") and \
+    #             (ah   is not None and ah   != ""):
+    #             self.ttd = ah / max(.05, abs(amps))
+    #
+    #     except Exception as e:
+    #         log_dataholder("calc_ttd ERROR: " + str(e))
+
     def calc_ttd(self, rpm, amps, ah):
         try:
             if  (rpm  is not None and rpm  != "") and \
                 (amps is not None and amps != "") and \
                 (ah   is not None and ah   != ""):
 
-                # datapoint is only valid if RPM is over 100
-                if rpm > self.rpm_threshold:
-                    self.valid_datapoints += 1
-                    if self.amps_running_avg == None:
-                        self.amps_running_avg = amps
-                    else:
-                        self.amps_running_avg = self.amps_running_avg * self.a + amps * self.b
-                    if self.valid_datapoints >= self.datapoints_needed:
-                        self.ttd = round(ah / max(.05,self.amps_running_avg, 1)) #preventing div by zero...
+                self.valid_datapoints += 1
+                if self.amps_running_avg == None:
+                    self.amps_running_avg = amps
                 else:
-                    self.valid_datapoints = 0
-                    self.amps_running_avg = None
+                    self.amps_running_avg = self.amps_running_avg * self.a + amps * self.b
+
+                if self.valid_datapoints >= self.datapoints_needed:
+                    self.ttd = ah / max(.05, abs(self.amps_running_avg))
+                else:
+                    self.ttd = ah / max(.05, abs(amps))
+
         except Exception as e:
             log_dataholder("calc_ttd ERROR: " + str(e))
 

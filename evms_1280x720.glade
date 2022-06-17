@@ -43,7 +43,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkViewport">
+              <object class="GtkViewport" id="Center_Gauge_Text">
                 <property name="width_request">100</property>
                 <property name="height_request">80</property>
                 <property name="visible">True</property>
@@ -204,35 +204,33 @@
                 <property name="can_focus">False</property>
                 <property name="halign">center</property>
                 <property name="valign">center</property>
-                <property name="label" translatable="yes">80</property>
+                <property name="label" translatable="yes">100</property>
                 <property name="justify">center</property>
                 <attributes>
                   <attribute name="font-desc" value="Ubuntu Mono Bold 20"/>
                 </attributes>
               </object>
               <packing>
-                <property name="x">140</property>
+                <property name="x">145</property>
                 <property name="y">50</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="lbl_TTD">
-                <property name="width_request">214</property>
-                <property name="height_request">23</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">center</property>
                 <property name="valign">center</property>
                 <property name="label" translatable="yes">TIME TO 
-DISCHARGE</property>
+DISCHARGE:</property>
                 <property name="justify">center</property>
                 <attributes>
-                  <attribute name="font-desc" value="Ubuntu Mono Bold 18"/>
+                  <attribute name="font-desc" value="Ubuntu Mono Bold 24"/>
                 </attributes>
               </object>
               <packing>
-                <property name="x">260</property>
-                <property name="y">15</property>
+                <property name="x">280</property>
+                <property name="y">5</property>
               </packing>
             </child>
             <child>
@@ -245,16 +243,16 @@ DISCHARGE</property>
                 <property name="label" translatable="yes">0:00</property>
                 <property name="justify">center</property>
                 <attributes>
-                  <attribute name="font-desc" value="Ubuntu Mono Bold 24"/>
+                  <attribute name="font-desc" value="Ubuntu Mono Bold 32"/>
                 </attributes>
               </object>
               <packing>
-                <property name="x">310</property>
-                <property name="y">60</property>
+                <property name="x">485</property>
+                <property name="y">15</property>
               </packing>
             </child>
             <child>
-              <object class="GtkViewport">
+              <object class="GtkViewport" id="LeftSideTextTable">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="shadow_type">none</property>
@@ -265,6 +263,7 @@ DISCHARGE</property>
                     <property name="border_width">1</property>
                     <property name="row_spacing">3</property>
                     <property name="column_spacing">21</property>
+                    <property name="row_homogeneous">True</property>
                     <property name="column_homogeneous">True</property>
                     <child>
                       <object class="GtkLabel" id="lbl_LAT">
@@ -345,7 +344,7 @@ DISCHARGE</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
-                        <property name="top_attach">1</property>
+                        <property name="top_attach">9</property>
                       </packing>
                     </child>
                     <child>
@@ -361,7 +360,7 @@ DISCHARGE</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
-                        <property name="top_attach">1</property>
+                        <property name="top_attach">9</property>
                       </packing>
                     </child>
                     <child>
@@ -377,7 +376,7 @@ DISCHARGE</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
-                        <property name="top_attach">0</property>
+                        <property name="top_attach">10</property>
                       </packing>
                     </child>
                     <child>
@@ -393,7 +392,7 @@ DISCHARGE</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
-                        <property name="top_attach">0</property>
+                        <property name="top_attach">10</property>
                       </packing>
                     </child>
                     <child>
@@ -409,7 +408,7 @@ DISCHARGE</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
-                        <property name="top_attach">10</property>
+                        <property name="top_attach">0</property>
                       </packing>
                     </child>
                     <child>
@@ -425,7 +424,7 @@ DISCHARGE</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
-                        <property name="top_attach">10</property>
+                        <property name="top_attach">0</property>
                       </packing>
                     </child>
                     <child>
@@ -441,7 +440,7 @@ DISCHARGE</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
-                        <property name="top_attach">9</property>
+                        <property name="top_attach">1</property>
                       </packing>
                     </child>
                     <child>
@@ -457,7 +456,7 @@ DISCHARGE</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
-                        <property name="top_attach">9</property>
+                        <property name="top_attach">1</property>
                       </packing>
                     </child>
                     <child>
@@ -480,14 +479,14 @@ DISCHARGE</property>
                         <property name="can_focus">False</property>
                         <property name="halign">end</property>
                         <property name="valign">center</property>
-                        <property name="label" translatable="yes">On Time:</property>
+                        <property name="label" translatable="yes">Run Time:</property>
                         <attributes>
                           <attribute name="font-desc" value="Ubuntu Mono Bold 18"/>
                         </attributes>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
-                        <property name="top_attach">2</property>
+                        <property name="top_attach">8</property>
                       </packing>
                     </child>
                     <child>
@@ -503,7 +502,7 @@ DISCHARGE</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
-                        <property name="top_attach">2</property>
+                        <property name="top_attach">8</property>
                       </packing>
                     </child>
                     <child>
@@ -577,59 +576,7 @@ DISCHARGE</property>
               </packing>
             </child>
             <child>
-              <object class="GtkViewport" id="Hdg">
-                <property name="width_request">125</property>
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="shadow_type">none</property>
-                <child>
-                  <object class="GtkGrid">
-                    <property name="width_request">64</property>
-                    <property name="height_request">23</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="halign">end</property>
-                    <property name="column_spacing">10</property>
-                    <child>
-                      <object class="GtkLabel" id="lbl_HDG_val">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="halign">end</property>
-                        <property name="label" translatable="yes">000.0</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Ubuntu Mono Bold 32"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="lbl_TTD1">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="halign">end</property>
-                        <property name="label" translatable="yes">HDG</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Ubuntu Mono Bold 16"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">1</property>
-                      </packing>
-                    </child>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="x">1140</property>
-                <property name="y">8</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkViewport">
+              <object class="GtkViewport" id="KTS_Viewport">
                 <property name="width_request">100</property>
                 <property name="height_request">80</property>
                 <property name="visible">True</property>
@@ -673,12 +620,12 @@ DISCHARGE</property>
                 </child>
               </object>
               <packing>
-                <property name="x">640</property>
+                <property name="x">650</property>
                 <property name="y">8</property>
               </packing>
             </child>
             <child>
-              <object class="GtkNotebook">
+              <object class="GtkNotebook" id="BarGraphNotebook">
                 <property name="width_request">1280</property>
                 <property name="height_request">178</property>
                 <property name="visible">True</property>
@@ -754,7 +701,7 @@ DISCHARGE</property>
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkLabel" id="Lbl_Bargraph">
                 <property name="width_request">80</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -798,17 +745,17 @@ PWR (kW)</property>
                 </child>
               </object>
               <packing>
-                <property name="x">1170</property>
+                <property name="x">1165</property>
                 <property name="y">440</property>
               </packing>
             </child>
             <child>
               <object class="GtkViewport" id="plotRingGaugeView">
                 <property name="width_request">640</property>
-                <property name="height_request">500</property>
+                <property name="height_request">505</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="shadow_type">none</property>
+                <property name="shadow_type">etched-in</property>
                 <child>
                   <placeholder/>
                 </child>
@@ -821,7 +768,7 @@ PWR (kW)</property>
               <object class="GtkComboBoxText" id="id_bar_history_combobox">
                 <property name="name">widget_bar_history_combobox</property>
                 <property name="width_request">198</property>
-                <property name="height_request">35</property>
+                <property name="height_request">30</property>
                 <property name="visible">True</property>
                 <property name="app_paintable">True</property>
                 <property name="can_focus">True</property>
@@ -855,7 +802,7 @@ PWR (kW)</property>
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkLabel" id="CTRL_TMP">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">center</property>
@@ -864,7 +811,7 @@ PWR (kW)</property>
 °C  </property>
                 <property name="justify">center</property>
                 <attributes>
-                  <attribute name="font-desc" value="Sans Bold 12"/>
+                  <attribute name="font-desc" value="Ubuntu Mono Bold 16"/>
                 </attributes>
               </object>
               <packing>
@@ -878,7 +825,7 @@ PWR (kW)</property>
                 <property name="can_focus">False</property>
                 <property name="halign">center</property>
                 <property name="valign">center</property>
-                <property name="label" translatable="yes">50 </property>
+                <property name="label" translatable="yes">100 </property>
                 <property name="justify">center</property>
                 <attributes>
                   <attribute name="font-desc" value="Ubuntu Mono Bold 20"/>
@@ -890,7 +837,7 @@ PWR (kW)</property>
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="id_charging">
+              <object class="GtkLabel" id="charging_lbl">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">CHARGING</property>
@@ -940,18 +887,98 @@ PWR (kW)</property>
               </packing>
             </child>
             <child>
-              <object class="GtkTextView" id="notification_textbox">
-                <property name="width_request">390</property>
-                <property name="height_request">100</property>
+              <object class="GtkViewport" id="TTD_Viewport">
+                <property name="name">TTD_Background</property>
+                <property name="width_request">641</property>
+                <property name="height_request">80</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="editable">False</property>
-                <property name="cursor_visible">False</property>
-                <property name="accepts_tab">False</property>
-                <property name="monospace">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkViewport">
+                <property name="width_request">100</property>
+                <property name="height_request">80</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="shadow_type">none</property>
+                <child>
+                  <object class="GtkViewport" id="Hdg">
+                    <property name="width_request">125</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="shadow_type">none</property>
+                    <child>
+                      <object class="GtkGrid">
+                        <property name="width_request">64</property>
+                        <property name="height_request">23</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">end</property>
+                        <property name="column_spacing">10</property>
+                        <child>
+                          <object class="GtkLabel" id="lbl_HDG_val">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="halign">end</property>
+                            <property name="label" translatable="yes">000.0</property>
+                            <attributes>
+                              <attribute name="font-desc" value="Ubuntu Mono Bold 32"/>
+                            </attributes>
+                          </object>
+                          <packing>
+                            <property name="left_attach">0</property>
+                            <property name="top_attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="lbl_HDG">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="halign">end</property>
+                            <property name="label" translatable="yes">HDG</property>
+                            <attributes>
+                              <attribute name="font-desc" value="Ubuntu Mono Bold 16"/>
+                            </attributes>
+                          </object>
+                          <packing>
+                            <property name="left_attach">0</property>
+                            <property name="top_attach">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
               </object>
               <packing>
-                <property name="x">250</property>
+                <property name="x">1140</property>
+                <property name="y">8</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkViewport" id="NotificationViewport">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="shadow_type">none</property>
+                <child>
+                  <object class="GtkTextView" id="notification_textbox">
+                    <property name="width_request">400</property>
+                    <property name="height_request">100</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="editable">False</property>
+                    <property name="cursor_visible">False</property>
+                    <property name="accepts_tab">False</property>
+                    <property name="monospace">True</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="x">240</property>
                 <property name="y">400</property>
               </packing>
             </child>
@@ -3456,7 +3483,7 @@ Electric Vessel Monitoring System</property>
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Software Component Versions: </property>
+                <property name="label" translatable="yes">Software Componentss: </property>
                 <attributes>
                   <attribute name="font-desc" value="Sans Bold 12"/>
                 </attributes>
@@ -3513,82 +3540,6 @@ Electric Vessel Monitoring System</property>
               </packing>
             </child>
             <child>
-              <object class="GtkBox">
-                <property name="width_request">100</property>
-                <property name="height_request">80</property>
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkLabel" id="about_sw_ver_val">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">about_sw_ver</property>
-                    <attributes>
-                      <attribute name="font-desc" value="Sans Bold 12"/>
-                    </attributes>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="about_sw_ver_val2">
-                    <property name="width_request">100</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">about_sw_ver</property>
-                    <attributes>
-                      <attribute name="font-desc" value="Sans Bold 12"/>
-                    </attributes>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="about_sw_ver_val1">
-                    <property name="width_request">100</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">about_sw_ver</property>
-                    <attributes>
-                      <attribute name="font-desc" value="Sans Bold 12"/>
-                    </attributes>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="about_sw_ver_val3">
-                    <property name="width_request">100</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">about_sw_ver</property>
-                    <attributes>
-                      <attribute name="font-desc" value="Sans Bold 12"/>
-                    </attributes>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">3</property>
-                  </packing>
-                </child>
-              </object>
-              <packing>
-                <property name="x">40</property>
-                <property name="y">75</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkTextView" id="id_about_txtbox_top">
                 <property name="width_request">640</property>
                 <property name="height_request">80</property>
@@ -3600,6 +3551,150 @@ Electric Vessel Monitoring System</property>
               <packing>
                 <property name="x">320</property>
                 <property name="y">100</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="halign">start</property>
+                <property name="valign">start</property>
+                <property name="column_spacing">1</property>
+                <property name="row_homogeneous">True</property>
+                <child>
+                  <object class="GtkLabel" id="evms_sw_ver">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="label" translatable="yes">evms base ver</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Sans Bold 12"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="data_sw_ver">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="label" translatable="yes">data frame ver</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Ubuntu Mono Bold 14"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="can_sw_ver">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="label" translatable="yes">canbus_ver</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Ubuntu Mono Bold 14"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="map_sw_ver">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="label" translatable="yes">mapping_ver</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Ubuntu Mono Bold 14"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="net_sw_ver">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="label" translatable="yes">net_ver</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Ubuntu Mono Bold 14"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">EVMS: </property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">DAT: </property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">CAN:  </property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">MAP: </property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">NET: </property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">4</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="x">40</property>
+                <property name="y">75</property>
               </packing>
             </child>
           </object>

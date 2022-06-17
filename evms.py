@@ -67,7 +67,7 @@ class App:
 
     def __init__(self):
 
-        self.sw_ver_evms = "0.15.3"
+        self.sw_ver_evms = "0.15.4"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -80,6 +80,7 @@ class App:
         self.dat = DataHolder()#'logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
         self.mapPlots = mapPlots('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
         self.evms_can = evms_can('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
+        self.evms_about_top_text = 'EVMS text box message goes here...  this is a long string to discribe the application..'
 
         try:
             self.init_AppLog()
@@ -160,6 +161,7 @@ class App:
             self.ttd_max = 10
             self.ttd_min = -100
 
+            self.id_about_txtbox_top = self.builder.get_object("id_about_txtbox_top")
             self.about_cfg_txtbox = self.builder.get_object("id_about_txtbox")
             self.btn_software_update = self.builder.get_object("id_software_update")
             self.btn_wifi_connect = self.builder.get_object('id_btn_wifi_connect')
@@ -173,7 +175,7 @@ class App:
             self.tripBtn_select = self.builder.get_object("id_trip_combo_box")
             self.triplog_select = self.builder.get_object("id_triplog_combobox")
             self.wifi_list = self.builder.get_object('id_list_wifi')
-            self.chrg_label = self.builder.get_object('id_charging')
+            self.chrg_label = self.builder.get_object('charging_lbl')
             self.gps_units = self.builder.get_object('id_gps_units')
             self.hdg_combo = self.builder.get_object('id_hdg_combo')
             self.gps_units.remove(2)
@@ -187,6 +189,7 @@ class App:
             self.bar_history_type = 'Power'
             self.wifi_txtbox = self.builder.get_object('id_wifi_txtbox')
             self.text_log_buffer = self.wifi_txtbox.get_buffer()
+            self.about_top_buffer = self.id_about_txtbox_top.get_buffer()
             self.scroll_window = self.builder.get_object('id_wifi_scrolled_window')
             self.shift = False
             self.caps = False
@@ -279,7 +282,7 @@ class App:
         self.tripBtn_Rs = self.builder.get_object("id_btn_restart")
         self.tripBtn_select = self.builder.get_object("id_trip_combo_box")
         self.triplog_select = self.builder.get_object("id_triplog_combobox")
-        self.chrg_label = self.builder.get_object('id_charging')
+
         self.notification_textbox = self.builder.get_object('notification_textbox')
         self.notification_icon = self.builder.get_object('notification_icon')
 
@@ -299,6 +302,7 @@ class App:
         self.notebook.connect('switch-page', on_switch_tab)
         self.about_text_buffer = self.about_cfg_txtbox.get_buffer()
         self.about_text_buffer.set_text(''.join(self.config_info))
+        self.about_top_buffer.set_text(self.evms_about_top_text)
         #self.about_text_buffer_header = ''
         #self.about_text_buffer_header.set_text("")
         self.bar_history.set_active(0)
@@ -778,8 +782,13 @@ class App:
         #update_image(self.triplog_select) #fixme - do we need to call this on init?
 
         self.triplog_select.connect('changed', update_image)
-        self.about_sw_ver_val       = self.builder.get_object("about_sw_ver_val")
-        self.id_about_txtbox_top    = self.builder.get_object("id_about_txtbox_top")
+
+        #setup aboutbox software version connections
+        self.evms_sw_ver       = self.builder.get_object("evms_sw_ver")
+        self.data_sw_ver       = self.builder.get_object("data_sw_ver")
+        self.can_sw_ver       = self.builder.get_object("can_sw_ver")
+        self.map_sw_ver       = self.builder.get_object("map_sw_ver")
+        self.net_sw_ver       = self.builder.get_object("net_sw_ver")
 
 
         # ---------- Setup Instruments Tab Label Connections
@@ -1210,6 +1219,7 @@ class App:
         self.dat.pwr_sec = np.roll(self.dat.pwr_sec, 1)
         self.dat.rpm_sec = np.roll(self.dat.rpm_sec, 1)
         self.dat.spd_sec = np.roll(self.dat.spd_sec, 1)
+        self.dat.calc_ttd(self.dat.rpm, self.dat.pack_amps, self.dat.pack_amp_hrs)
 
         if self.dat.active_notification == True:
             self.notification_icon.show()
@@ -1324,34 +1334,31 @@ class App:
         try:
             #if self.dat.update_about_page == True:
                 #self.dat.update_about_page = False
-            GLib.idle_add(self.about_sw_ver_val.set_label, "EVMS SW: " + self.sw_ver_evms)
-            #GLib.idle_add(self.id_about_txtbox_top.set_label, "About Header.... \n\n this is new text...") #FIXME todo.  Add short text msg here??
-                # + "CAN SW: " + sw_ver_can)
+            GLib.idle_add(self.evms_sw_ver.set_label, self.sw_ver_evms)
+            GLib.idle_add(self.data_sw_ver.set_label, self.dat.sw_ver_data)
+            GLib.idle_add(self.can_sw_ver.set_label, self.evms_can.sw_ver_can)
+            GLib.idle_add(self.map_sw_ver.set_label, self.mapPlots.sw_ver_maps)
+            #GLib.idle_add(self.net_sw_ver.set_label, self.net.sw_ver_net)
+
 
             if self.dat.soc is not None and self.dat.soc != '':
                 GLib.idle_add(self.lbl_Batt_val.set_label, "{:5.1f}".format(float(self.dat.soc)))
             if self.dat.mot_temp is not None and self.dat.mot_temp != '':
-                GLib.idle_add(self.lbl_MotTemp_val.set_label, "{:4.0f}".format(float(self.dat.mot_temp)))
-                if self.dat.mot_temp is not None and self.dat.mot_temp != '':
-                    GLib.idle_add(self.lbl_CtlrTemp_val.set_label, "{:4.0f}".format(float(self.dat.mot_ctrl_temp)))
+                GLib.idle_add(self.lbl_MotTemp_val.set_label, "{:3d}".format(self.dat.mot_temp))
+            if self.dat.mot_ctrl_temp is not None and self.dat.mot_ctrl_temp != '':
+                GLib.idle_add(self.lbl_CtlrTemp_val.set_label, "{:3d}".format(self.dat.mot_ctrl_temp))
 
             if self.dat.pack_amps is not None:
                 GLib.idle_add(self.lbl_PackAmps_val.set_label, "{:d}".format(abs(self.dat.pack_amps)))
                 GLib.idle_add(self.lbl_PackVolts_val.set_label, str(self.dat.pack_volts))
-                # GLib.idle_add(self.lbl_PackAh_val.set_label, str(self.dat.pack_amp_hrs))
-                # GLib.idle_add(self.lbl_HighTemp_val.set_label, str(self.dat.pack_hi_tmp))
-                # GLib.idle_add(self.lbl_Resistance_val.set_label, str(self.dat.resistance))
-                # GLib.idle_add(self.lbl_LowTemp_val.set_label, str(self.dat.pack_lo_tmp))
-                # GLib.idle_add(self.lbl_OpenVolts_val.set_label, str(self.dat.pack_open_v))
-                # GLib.idle_add(self.lbl_TotalCycles_val.set_label, str(self.dat.pack_total_cyc))
-                self.dat.calc_ttd(self.dat.rpm, self.dat.pack_amps, self.dat.pack_amp_hrs)
-
             if self.dat.ttd is not None:
                 if self.dat.ttd < 0:
-                    ttd_str = min(self.ttd_max, abs(self.dat.ttd))
-                    ttd_str = str(int(ttd_str)) + ':' + str(round((ttd_str % 1) * 60)).zfill(2)
+                    pass
+                #don't update the value if the TTD is <0
+                    # ttd_str = min(self.ttd_max, abs(self.dat.ttd))
+                    # ttd_str = str(int(ttd_str)) + ':' + str(round((ttd_str % 1) * 60)).zfill(2)
                     # log("TTD: " + ttd_str)
-                    GLib.idle_add(self.lbl_TTD_val.set_label, ttd_str)
+                    #GLib.idle_add(self.lbl_TTD_val.set_label, ttd_str)
                     # GLib.idle_add(self.lbl_TTD.set_label, "TTD")
                 else:
                     ttd_str = max(self.ttd_min, abs(self.dat.ttd))

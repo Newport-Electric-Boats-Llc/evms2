@@ -7,8 +7,10 @@
 
 ver="0.4.0"
 
-echo "evms-start.sh version: $ver"
-cd /home/neb/evms2/
+echo "evms-start-sim.sh version: $ver"
+#cd /home/neb/evms2/
+cd /home/walt/evms2/
+
 
 mkdir -p logs/canLogs
 mkdir -p logs/gpsLogs

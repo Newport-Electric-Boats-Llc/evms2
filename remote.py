@@ -18,7 +18,7 @@ import time
 port_v = 49000
 port_l = 49001
 
-sw_ver_remote = '0.2.0'
+sw_ver_net = '0.2.0'
 
 #host_domain = 'aws.newportelectricboats.com'
 host_domain = 'ec2-54-151-23-47.us-west-1.compute.amazonaws.com'
@@ -68,7 +68,7 @@ def version_sync(check):
         logging.FileHandler('versionSyncRemote.info'),
         logging.StreamHandler(sys.stdout)
     ])
-    logging.info('\n\n     *** *** *** Newport Electric Boats, LLC *** *** *** \nEVMS Software Update System Started: (rev ' + sw_ver_remote + ')\n\nConnecting to server...\n')
+    logging.info('\n\n     *** *** *** Newport Electric Boats, LLC *** *** *** \nEVMS Software Update System Started: (rev ' + sw_ver_net + ')\n\nConnecting to server...\n')
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         timeout = 0
         attempt=1
@@ -141,7 +141,7 @@ def log_sync():
         logging.FileHandler('logSyncRemote.info'),
         logging.StreamHandler(sys.stdout)
     ])
-    logging.info('\n\n     *** *** *** Newport Electric Boats, LLC *** *** *** \nEVMS Logger Updating System Started: (rev ' + sw_ver_remote + ')\n')
+    logging.info('\n\n     *** *** *** Newport Electric Boats, LLC *** *** *** \nEVMS Logger Updating System Started: (rev ' + sw_ver_net + ')\n')
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         host = host_domain
         remote_name = socket.gethostname()
@@ -199,7 +199,7 @@ def log_sync():
         log.removeHandler(hdlr)
 
 def main():
-    logging.info('EVMS sync service: starting up version: ' + sw_ver_remote)
+    logging.info('EVMS sync service: starting up version: ' + sw_ver_net)
     while True:
         try:
             result = version_sync(False)
