@@ -37,6 +37,7 @@ import numpy as np
 from evms_data_holder import DataHolder
 from evms_can import evms_can
 from mapPlots import mapPlots
+#from remote import remote
 from datetime import datetime, timedelta
 import subprocess
 
@@ -67,7 +68,7 @@ class App:
 
     def __init__(self):
 
-        self.sw_ver_evms = "0.15.4"
+        self.sw_ver_evms = "0.15.5"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -1338,7 +1339,7 @@ class App:
             GLib.idle_add(self.data_sw_ver.set_label, self.dat.sw_ver_data)
             GLib.idle_add(self.can_sw_ver.set_label, self.evms_can.sw_ver_can)
             GLib.idle_add(self.map_sw_ver.set_label, self.mapPlots.sw_ver_maps)
-            #GLib.idle_add(self.net_sw_ver.set_label, self.net.sw_ver_net)
+            #GLib.idle_add(self.net_sw_ver.set_label, self.remote.sw_ver_net) #remote needs to be setup as a class before we can reference this.
 
 
             if self.dat.soc is not None and self.dat.soc != '':

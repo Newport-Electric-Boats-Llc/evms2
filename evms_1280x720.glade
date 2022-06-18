@@ -621,7 +621,7 @@ DISCHARGE:</property>
               </object>
               <packing>
                 <property name="x">650</property>
-                <property name="y">8</property>
+                <property name="y">15</property>
               </packing>
             </child>
             <child>
@@ -882,8 +882,8 @@ PWR (kW)</property>
                 <property name="icon_size">6</property>
               </object>
               <packing>
-                <property name="x">575</property>
-                <property name="y">350</property>
+                <property name="x">550</property>
+                <property name="y">360</property>
               </packing>
             </child>
             <child>
@@ -956,7 +956,7 @@ PWR (kW)</property>
               </object>
               <packing>
                 <property name="x">1140</property>
-                <property name="y">8</property>
+                <property name="y">15</property>
               </packing>
             </child>
             <child>
@@ -967,7 +967,7 @@ PWR (kW)</property>
                 <child>
                   <object class="GtkTextView" id="notification_textbox">
                     <property name="width_request">400</property>
-                    <property name="height_request">100</property>
+                    <property name="height_request">94</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="editable">False</property>
@@ -978,8 +978,8 @@ PWR (kW)</property>
                 </child>
               </object>
               <packing>
-                <property name="x">240</property>
-                <property name="y">400</property>
+                <property name="x">239</property>
+                <property name="y">410</property>
               </packing>
             </child>
           </object>
@@ -3568,7 +3568,7 @@ Electric Vessel Monitoring System</property>
                     <property name="halign">start</property>
                     <property name="label" translatable="yes">evms base ver</property>
                     <attributes>
-                      <attribute name="font-desc" value="Sans Bold 12"/>
+                      <attribute name="font-desc" value="Ubuntu Mono 14"/>
                     </attributes>
                   </object>
                   <packing>
@@ -3626,7 +3626,7 @@ Electric Vessel Monitoring System</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="halign">start</property>
-                    <property name="label" translatable="yes">net_ver</property>
+                    <property name="label" translatable="yes">0.2.0</property>
                     <attributes>
                       <attribute name="font-desc" value="Ubuntu Mono Bold 14"/>
                     </attributes>

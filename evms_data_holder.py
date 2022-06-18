@@ -268,9 +268,9 @@ class DataHolder:
                     self.amps_running_avg = self.amps_running_avg * self.a + amps * self.b
 
                 if self.valid_datapoints >= self.datapoints_needed:
-                    self.ttd = ah / max(.05, abs(self.amps_running_avg))
+                    self.ttd = min(20,ah / max(.05, abs(self.amps_running_avg)))
                 else:
-                    self.ttd = ah / max(.05, abs(amps))
+                    self.ttd = min(20,ah / max(.05, abs(amps)))
 
         except Exception as e:
             log_dataholder("calc_ttd ERROR: " + str(e))
