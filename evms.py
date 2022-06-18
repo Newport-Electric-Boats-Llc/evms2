@@ -68,7 +68,7 @@ class App:
 
     def __init__(self):
 
-        self.sw_ver_evms = "0.15.5"
+        self.sw_ver_evms = "0.15.6"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
