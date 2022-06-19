@@ -68,7 +68,7 @@ class App:
 
     def __init__(self):
 
-        self.sw_ver_evms = "0.15.6"
+        self.sw_ver_evms = "0.15.7"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -1265,9 +1265,9 @@ class App:
         log_window_buffer = ''
         end_iter = self.text_log_buffer.get_end_iter()
         self.text_log_buffer.insert(end_iter, log_data)
-        position = self.scroll_window.get_vadjustment()
-        position.set_value(position.get_upper())
-        self.scroll_window.set_vadjustment(position)
+        # position = self.scroll_window.get_vadjustment()
+        # position.set_value(position.get_upper())
+        # self.scroll_window.set_vadjustment(position)
 
     def do_OneMinTasks(self):
 
@@ -1857,7 +1857,11 @@ class App:
     # ---------------------------------- Logging  ----------------------------------
 
     def print_can_column_headers(self):
-        header_string = str('CAN bus columns are defined as:\n' +
+
+        header_string = str('\n\n*************** Newport Electric Boats, LLC ***************'
+                        + '\nEVMS software version ' + self.sw_ver_evms + ')\n\n')
+
+        header_string = header_string + str('CAN bus columns are defined as:\n' +
                         'A_HEADER,date,time,lat,lon,spd,hdg,rpm,soc,ibat,vbat,motor_tmp,mot_ctrl_temp,' +
                         'pack_amp_hrs,thrtl_inp,brake_inp,mot_amps,rev,charging,econ_bit,regen_bit' + '\n'
                         'B_HEADER,pack_status,pack_hlth,pack_cycles,pack_open_v,pack_avg_cell_v,lo_cell_v,hi_cell_v,' +
@@ -1868,22 +1872,19 @@ class App:
         return header_string
 
     def init_AppLog(self):
-        # setup time string with local time, to be used as base of logfile names
-        log('\n\n*************** Newport Electric Boats, LLC ***************'
-            + '\nEVMS App Logging Started: (rev ' + self.sw_ver_evms + ')\n\n')
-
-        log('EVMS software version: ' + str(self.sw_ver_evms) +
-              '\nMaps version: ' + self.mapPlots.sw_ver_maps +
-              '\nDat version: '  + self.dat.sw_ver_data +
-              '\nCan version: '  + self.evms_can.sw_ver_can + '\n\n')
-
-        self.SysLogName = 'logs/' + self.appStartDateString + '_evms_system.log'
-        self.CANLogName = 'logs/' + self.appStartDateString + '_evms_can.log'
-        self.GPSLogName = 'logs/' + self.appStartDateString + '_evms_gps.log'
-        log('SystemLog = ' + str(self.SysLogName))
 
         try:
             log(self.print_can_column_headers())
+
+            log('EVMS software version: ' + str(self.sw_ver_evms) +
+                  '\nMaps version: ' + self.mapPlots.sw_ver_maps +
+                  '\nDat version: '  + self.dat.sw_ver_data +
+                  '\nCan version: '  + self.evms_can.sw_ver_can + '\n\n')
+
+            self.SysLogName = 'logs/' + self.appStartDateString + '_evms_system.log'
+            self.CANLogName = 'logs/' + self.appStartDateString + '_evms_can.log'
+            self.GPSLogName = 'logs/' + self.appStartDateString + '_evms_gps.log'
+            log('SystemLog = ' + str(self.SysLogName))
 
         except Exception as e:
             log("init_AppLog ERROR: " + str(e))
