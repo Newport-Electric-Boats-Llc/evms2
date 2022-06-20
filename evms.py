@@ -68,7 +68,7 @@ class App:
 
     def __init__(self):
 
-        self.sw_ver_evms = "0.15.7"
+        self.sw_ver_evms = "0.15.8"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -1024,9 +1024,9 @@ class App:
                         line_read = line_read + 1
                         # self.log_message ("processing replay_file line#: " + str(line_read))
                         # log(line)
-                        if line_read == 2:
+                        if line_read == 3:
                             sw_ver = int(line.split(' ')[-1].rstrip().split('.')[1])
-                        if line_read >= 5:
+                        if line_read >= 10:
                             try:
                                 if line[1:3] == ',2':
                                     columns = line.split(",")
