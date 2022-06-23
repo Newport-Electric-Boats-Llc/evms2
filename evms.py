@@ -1826,7 +1826,7 @@ class App:
                         start_angle)
             ########## RING 3 : POWER ##########
             else:
-                if self.dat.Regen_bit == 1:
+                if self.dat.regen_bit == 1:
                     ctx.set_source_rgb(0,1,0)
                 else:
                     ctx.set_source_rgb(self.dat.pwr_R, self.dat.pwr_G, self.dat.pwr_B)
