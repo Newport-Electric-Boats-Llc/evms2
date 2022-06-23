@@ -68,7 +68,7 @@ class App:
 
     def __init__(self):
 
-        self.sw_ver_evms = "0.15.7"
+        self.sw_ver_evms = "0.15.8"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -1826,7 +1826,11 @@ class App:
                         start_angle)
             ########## RING 3 : POWER ##########
             else:
-                ctx.set_source_rgb(self.dat.pwr_R, self.dat.pwr_G, self.dat.pwr_B)
+                if self.dat.regen_bit != 0:
+                    ctx.set_source_rgb(0,1,0)
+                else:
+                    ctx.set_source_rgb(self.dat.pwr_R, self.dat.pwr_G, self.dat.pwr_B)
+
                 ctx.set_line_width(line_width)
                 ctx.set_tolerance(0.1)
 
