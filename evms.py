@@ -68,7 +68,7 @@ class App:
 
     def __init__(self):
 
-        self.sw_ver_evms = "0.15.9"
+        self.sw_ver_evms = "0.15.10"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -81,7 +81,7 @@ class App:
         self.dat = DataHolder()#'logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
         self.mapPlots = mapPlots('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
         self.evms_can = evms_can('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
-        self.evms_about_top_text = 'EVMS text box message goes here...  this is a long string to discribe the application..'
+        self.evms_about_top_text = 'The EVMS system is for display and monitoring the electric propulsion system status. Motor control is not affected by the EMVS setings.'
 
         try:
             self.init_AppLog()
