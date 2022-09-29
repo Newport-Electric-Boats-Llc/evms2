@@ -1,8 +1,9 @@
 ######################################################################################################################
 #
 #   Copyright (c) 2022 Newport Electric Boats, LLC. All rights reserved.
-#   This application source code is Confidential Information
-#   Application: Electric Vessel Management System (EVMS)
+#   This application source code is Confidential Information. Use or disclosure only permitted with written
+#   authorization by Newport Electric Boats, LLC.
+#   Application Name: Electric Vessel Management System (EVMS)
 #   Filename: evms.py
 #
 ######################################################################################################################
@@ -69,7 +70,7 @@ class App:
 
     def __init__(self):
 
-        self.sw_ver_evms = "0.15.11"
+        self.sw_ver_evms = "0.15.12"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
