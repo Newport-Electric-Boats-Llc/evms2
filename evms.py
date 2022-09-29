@@ -70,13 +70,15 @@ class App:
 
     def __init__(self):
 
-        self.sw_ver_evms = "0.15.12"
+        self.sw_ver_evms = "1.0.0" #toggling MPO on BMS
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
         self.GPSLog = None
         self.app_logging_enabled = True  # ALWAYS TRUE
         self.sys_logging_enabled = True
+        self.can_tx_msgs = False
+        self.select_lfp_bank_2 = False
 
         self.config_info = self.read_evms_system_settings()
 
@@ -257,11 +259,11 @@ class App:
 
         def on_switch_tab(notebook, tab, index):
             try:
-                tab_list = ['Instruments', 'CAN Data', 'TripLog', 'WiFi', 'About']
+                tab_list = ['Instruments', 'CAN Data', 'TripLog', 'System', 'About']
                 log('Selected ' + tab_list[index] + ' Tab')
             except:
                 log('Exception on_switch_tab' + str(e))
-        
+
         def update_line_skip(button, skip):
             self.line_skip = skip
 
@@ -932,7 +934,7 @@ class App:
             if self.syslog_replay_file is None:
                 # fixme:
                 executor.submit(self.gps_reader_thread)
-                executor.submit(self.can_reader_thread, self.CANInterface)
+                executor.submit(self.can_processing_thread, self.CANInterface)
                 executor.submit(gtk.main)
                 executor.submit(self.tenHz_timer_thread)
             else:
@@ -995,6 +997,9 @@ class App:
                         self.gps_logging_enabled = True
                     elif line[1] == 'False':
                         self.gps_logging_enabled = False
+                elif line[0] == 'lfp_banks':
+                    self.lfp_banks == float(line[1])
+
         return lines[13:]
 
 
@@ -1177,6 +1182,9 @@ class App:
                     break
 
                 try:
+                    if lfp_banks > 1:
+                        if self.dat.runTime_100ms % 2 == 0:  # transmit outbound can message(s) every 200 ms
+                            self.can_tx_msgs = True
 
                     if self.dat.get_dataholder_log() != '': # -------------- process any data_holder logs --------------
                         dhlog_entry = self.dat.get_dataholder_log()
@@ -1188,14 +1196,14 @@ class App:
                     # print("self.dat.runTime_100ms={:.d}".format(self.dat.runTime_100ms))
                     self.dat.pwr_10hz = np.roll(self.dat.pwr_10hz, 1)
                     self.dat.pwr_10hz[0] = self.dat.pwr
-                    
+
                     self.dat.rpm_10hz = np.roll(self.dat.rpm_10hz, 1)
                     self.dat.rpm_10hz[0] = self.dat.rpm
-                    
+
                     self.dat.spd_10hz = np.roll(self.dat.spd_10hz, 1)
                     self.dat.spd_10hz[0] = self.dat.spd
-                    
-                    
+
+
                     # print("self.dat.pwr_10hz[{:d}] = {:0.4f}".format(self.dat.runTime_100ms,self.dat.pwr_10hz[self.dat.runTime_100ms]))
 
                     self.update_runTimer()
@@ -1583,7 +1591,7 @@ class App:
         try:
             ctx_ctrlTemp.set_source_rgb(0.8, .8, .8)  # bar background color
             ctx_ctrlTemp.set_line_width(50)
-            
+
             gauge_width = 30
             top_right = 200  # mid-point startup condition until can data available.
             battery_widget_height = 400
@@ -2056,9 +2064,27 @@ class App:
         try:
             log("starting CAN thread")
             while True:
+                if self.can_tx_msgs == True:
+                    self.can_tx_msgs = False
+                    if self.dat.runTime_sec % 5 == 0: # toggle every 5 sec... TODO: update business logic
+                        self.select_lfp_bank_2 = True
+                        #log("LFP Bank switch: select_lfp_bank_2 = " + str(self.select_lfp_bank_2))
+                    else:
+                        self.select_lfp_bank_2 = False #if this is zero, select_lfp_bank_1
+                        #log("LFP Bank switch: select_lfp_bank_2 = " + str(self.select_lfp_bank_2))
+
+                    # if (self.select_lfp_bank_2 != selectbank2):
+                    #     self.select_lfp_bank_2 = selectbank2
+                    #     log("LFP Bank switch: select_lfp_bank_2 = " + str(self.select_lfp_bank_2))
+
+                    #send can messages first, if it is time to do so (for consistant outbound message timing)
+                    self.evms_can.can_send_select_LFP(interface, self.select_lfp_bank_2)
+
+                #read incomming can messages
                 self.evms_can.can_read_data(interface, self.dat)
+
         except Exception as e:
-            log("Exception can_reader_thread: " + str(e))
+            log("Exception can_processing_thread: " + str(e))
 
 
 # ---------------------------------------- main ----------------------------------------------

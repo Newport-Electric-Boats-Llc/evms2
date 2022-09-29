@@ -7,16 +7,17 @@
 ######################################################################################################################
 
 import serial, can
+from can import Message
 #from evms_data_holder import DataHolder
 import logging
 import sys
 
 # --- GLOBAL Variables -----
-sw_ver_can = "0.9.4"
+#sw_ver_can = "0.9.4"
 
 class evms_can:
     def __init__(self, applog, buffer):
-        self.sw_ver_can = "0.9.3"
+        self.sw_ver_can = "1.0.0"
         self.applog = applog
         self.buffer = buffer
         logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO, handlers=[
@@ -28,6 +29,16 @@ class evms_can:
         global log_window_buffer
         self.buffer += message + '\n'
         logging.info(message)
+
+    # def can_write_data(self, canInterface: can.interface.Bus, message):
+    #     canInterface.send(1)
+
+    def can_send_select_LFP(self, canInterface: can.interface.Bus,on_off):
+
+        enable_LFP1 = Message(arbitration_id=0x701, is_extended_id=True, data=[on_off]) #, 0x1, 0x2, 0x3])
+        #print(enable_LFP1)
+        #self.log("sending CAN message: " + str(enable_LFP1))
+        canInterface.send(enable_LFP1)
 
 
     def can_read_data(self, canInterface: can.interface.Bus, v_dat):
@@ -275,13 +286,18 @@ class evms_can:
                 pid_error_two = (message.data[7] << 8) | message.data[6]
                 v_dat.pid_err_two = pid_error_two
                 return "PACK ERROR RESPONSE: " + v_dat.pack_error_responses
-        elif message.arbitration_id == 51:  ## PACK CELL BROADCAST
+        elif message.arbitration_id == 54: #51:  ## PACK CELL BROADCAST
             tmp_str = ''
             for i in message.data:
-                tmp_str += hex(i) + ' '
-            if tmp_str != v_dat.pack_cell_broadcast:
+                tmp_str += hex(i) + ' '               #https://andromedaint.atlassian.net/wiki/spaces/DOC/pages/28737773/CAN+Messaging+Maps
+            if tmp_str != v_dat.pack_cell_broadcast:  #http://socialledge.com/sjsu/index.php/DBC_Format
                 v_dat.pack_cell_broadcast = tmp_str
-                print(tmp_str)
+                self.cell_id = message.data[0]   #: 0 | 8 @ 1 + (1, 0)[0 | 0]
+                self.cell_checksum = message.data[1]  #: 56 | 8 @ 1 - (1, 0)[0 | 0]
+                self.cell_open_volt = message.data[1]  #: 47 | 16 @ 0 - (0.0001, 0)[-6 | 6]
+                self.cell_internal_resist = message.data[1]  #: 31 | 16 @ 0 - (1E-005, 0)[0 | 0]
+                self.cell_inst_volt = message.data[1]
+                #print(tmp_str)
 
         #         cell_ID = message.data[0]
         #         packCellBroadcastLst.append(cell_ID)

@@ -10,7 +10,7 @@ import numpy as np
 
 class DataHolder:
     def __init__(self):
-        self.sw_ver_data = "0.3.4"
+        self.sw_ver_data = "1.0.0"
         self.ac1239_status_1 = ""
         self.rpm = None
         self.mot_rpm = None
@@ -77,6 +77,11 @@ class DataHolder:
         self.pid_err_two = None
 
         self.pack_cell_broadcast = ""
+        self.cell_id = None                 #: 0 | 8 @ 1 + (1, 0)[0 | 0]
+        self.cell_checksum = None           #: 56 | 8 @ 1 - (1, 0)[0 | 0]
+        self.cell_open_volt = None          #: 47 | 16 @ 0 - (0.0001, 0)[-6 | 6]
+        self.cell_internal_resist = None    #: 31 | 16 @ 0 - (1E-005, 0)[0 | 0]
+        self.cell_inst_volt = None          #: 15 | 16 @ 0 - (0.0001, 0)[-6 | 6]
 
         self.time = None
         self.date = None
