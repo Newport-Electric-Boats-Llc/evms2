@@ -1,7 +1,8 @@
 ######################################################################################################################
 #
 #   Copyright (c) 2022 Newport Electric Boats, LLC. All rights reserved.
-#   Electric Vessel Management System (EVMS)
+#   This application source code is Confidential Information
+#   Application: Electric Vessel Management System (EVMS)
 #   Filename: evms.py
 #
 ######################################################################################################################
@@ -68,7 +69,7 @@ class App:
 
     def __init__(self):
 
-        self.sw_ver_evms = "0.15.5"
+        self.sw_ver_evms = "0.15.6"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -81,7 +82,9 @@ class App:
         self.dat = DataHolder()#'logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
         self.mapPlots = mapPlots('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
         self.evms_can = evms_can('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
-        self.evms_about_top_text = 'EVMS text box message goes here...  this is a long string to discribe the application..'
+        self.evms_about_top_text = 'EVMS computer displays up to the second information about the ' \
+                                   'electric propulsion system.  The EVMS is not required to control ' \
+                                   'the motor, its function is for information display only.'
 
         try:
             self.init_AppLog()
