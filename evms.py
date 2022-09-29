@@ -69,7 +69,7 @@ class App:
 
     def __init__(self):
 
-        self.sw_ver_evms = "0.15.6"
+        self.sw_ver_evms = "0.15.11"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -82,9 +82,7 @@ class App:
         self.dat = DataHolder()#'logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
         self.mapPlots = mapPlots('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
         self.evms_can = evms_can('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
-        self.evms_about_top_text = 'EVMS computer displays up to the second information about the ' \
-                                   'electric propulsion system.  The EVMS is not required to control ' \
-                                   'the motor, its function is for information display only.'
+        self.evms_about_top_text = 'The EVMS system is for display and monitoring the electric propulsion system status. Motor control is not affected by the EMVS setings.'
 
         try:
             self.init_AppLog()
@@ -157,7 +155,7 @@ class App:
 
             # uncomment the following line to make window frameless (unable to kill via titlebar)
             #self.window.set_decorated(False)
-            self.window.set_decorated(True)
+            self.window.set_decorated(False)
 
             # ---------------------- application variables ---
             self.plot_power_history = True
@@ -1027,9 +1025,9 @@ class App:
                         line_read = line_read + 1
                         # self.log_message ("processing replay_file line#: " + str(line_read))
                         # log(line)
-                        if line_read == 2:
+                        if line_read == 3:
                             sw_ver = int(line.split(' ')[-1].rstrip().split('.')[1])
-                        if line_read >= 5:
+                        if line_read >= 10:
                             try:
                                 if line[1:3] == ',2':
                                     columns = line.split(",")
@@ -1268,9 +1266,9 @@ class App:
         log_window_buffer = ''
         end_iter = self.text_log_buffer.get_end_iter()
         self.text_log_buffer.insert(end_iter, log_data)
-        position = self.scroll_window.get_vadjustment()
-        position.set_value(position.get_upper())
-        self.scroll_window.set_vadjustment(position)
+        # position = self.scroll_window.get_vadjustment()
+        # position.set_value(position.get_upper())
+        # self.scroll_window.set_vadjustment(position)
 
     def do_OneMinTasks(self):
 
@@ -1829,7 +1827,11 @@ class App:
                         start_angle)
             ########## RING 3 : POWER ##########
             else:
-                ctx.set_source_rgb(self.dat.pwr_R, self.dat.pwr_G, self.dat.pwr_B)
+                if self.dat.regen_bit == 1:
+                    ctx.set_source_rgb(0,1,0)
+                else:
+                    ctx.set_source_rgb(self.dat.pwr_R, self.dat.pwr_G, self.dat.pwr_B)
+
                 ctx.set_line_width(line_width)
                 ctx.set_tolerance(0.1)
 
@@ -1860,7 +1862,11 @@ class App:
     # ---------------------------------- Logging  ----------------------------------
 
     def print_can_column_headers(self):
-        header_string = str('CAN bus columns are defined as:\n' +
+
+        header_string = str('\n\n*************** Newport Electric Boats, LLC ***************'
+                        + '\nEVMS software version ' + self.sw_ver_evms + ')\n\n')
+
+        header_string = header_string + str('CAN bus columns are defined as:\n' +
                         'A_HEADER,date,time,lat,lon,spd,hdg,rpm,soc,ibat,vbat,motor_tmp,mot_ctrl_temp,' +
                         'pack_amp_hrs,thrtl_inp,brake_inp,mot_amps,rev,charging,econ_bit,regen_bit' + '\n'
                         'B_HEADER,pack_status,pack_hlth,pack_cycles,pack_open_v,pack_avg_cell_v,lo_cell_v,hi_cell_v,' +
@@ -1871,22 +1877,19 @@ class App:
         return header_string
 
     def init_AppLog(self):
-        # setup time string with local time, to be used as base of logfile names
-        log('\n\n*************** Newport Electric Boats, LLC ***************'
-            + '\nEVMS App Logging Started: (rev ' + self.sw_ver_evms + ')\n\n')
-
-        log('EVMS software version: ' + str(self.sw_ver_evms) +
-              '\nMaps version: ' + self.mapPlots.sw_ver_maps +
-              '\nDat version: '  + self.dat.sw_ver_data +
-              '\nCan version: '  + self.evms_can.sw_ver_can + '\n\n')
-
-        self.SysLogName = 'logs/' + self.appStartDateString + '_evms_system.log'
-        self.CANLogName = 'logs/' + self.appStartDateString + '_evms_can.log'
-        self.GPSLogName = 'logs/' + self.appStartDateString + '_evms_gps.log'
-        log('SystemLog = ' + str(self.SysLogName))
 
         try:
             log(self.print_can_column_headers())
+
+            log('EVMS software version: ' + str(self.sw_ver_evms) +
+                  '\nMaps version: ' + self.mapPlots.sw_ver_maps +
+                  '\nDat version: '  + self.dat.sw_ver_data +
+                  '\nCan version: '  + self.evms_can.sw_ver_can + '\n\n')
+
+            self.SysLogName = 'logs/' + self.appStartDateString + '_evms_system.log'
+            self.CANLogName = 'logs/' + self.appStartDateString + '_evms_can.log'
+            self.GPSLogName = 'logs/' + self.appStartDateString + '_evms_gps.log'
+            log('SystemLog = ' + str(self.SysLogName))
 
         except Exception as e:
             log("init_AppLog ERROR: " + str(e))
@@ -2063,3 +2066,5 @@ if __name__ == "__main__":
         app = App()
     except Exception as e:
         print(e)
+
+

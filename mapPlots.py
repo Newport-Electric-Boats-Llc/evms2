@@ -25,7 +25,7 @@ maps_dir = '/home/neb/evms2/maps/'
 
 class mapPlots():
     def __init__(self, applog, buffer):
-        self.sw_ver_maps = '0.4.0'
+        self.sw_ver_maps = '0.4.1'
         self.applog = applog
         self.buffer = buffer
         logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO, handlers=[
@@ -51,8 +51,8 @@ class mapPlots():
         #needed for input into the gmplot tool, as it takes DDmmmmm format (RMC outputs DDmmmmm)
         base_name = filename.split('/')[-1]
         image_name = base_name + '_trip_map_'+ stat +'.png'
-        if os.path.isfile(maps_dir + image_name):
-            return maps_dir + image_name
+        # if os.path.isfile(maps_dir + image_name):
+        #     return maps_dir + image_name
         try:
             f = open(filename, 'r+')
             f.readline()
@@ -74,7 +74,7 @@ class mapPlots():
                 line = file.readline()
                 count = 0
                 while line != '':
-                    if count > 6:
+                    if count >= 9:
                         if line[0] == 'a':
                             l = len(line.split(','))
                             if  l == 21:
@@ -87,10 +87,10 @@ class mapPlots():
 
             #convert_to_DDmmmmm = True # until May 14th at noon, the self.logs have been written using DD mm.mmmm
         except Exception as e:
-            return 'plot_coords part 1 - ERROR: ' + str(e)
+            return 'plot_coords part 1 - File access ERROR: ' + str(e)
 
         try:
-            table = np.genfromtxt(tmp, dtype=str, delimiter=',', skip_header=0, invalid_raise=False)
+            table = np.genfromtxt(tmp, dtype=str, delimiter=',', skip_header=1, invalid_raise=False)
             # table = np.delete(table, np.where(
             # (table[:, 0] == 'b') | (table[:, 0] == 'c')), axis=0)
             lats = table[:, 3]
@@ -111,7 +111,7 @@ class mapPlots():
                         ddddd = mmmmm * 100 / 60
                         lats[idx] = DD + ddddd
                     else:
-                        lats[idx] = float(lat) / 100
+                        lats[idx] = float(lat) #/ 100
 
             for idx, lon in enumerate(lons):
                 if self.is_str_Float(lon):
@@ -123,7 +123,7 @@ class mapPlots():
                         ddddd = mmmmm * 100 / 60
                         lons[idx] = (DD + ddddd) * -1
                     else:
-                        lons[idx] = float(lon) / -100
+                        lons[idx] = float(lon) #/ -100
         except Exception as e:
             return 'plot_coords part 2 - ERROR: ' + str(e)
 
@@ -136,9 +136,9 @@ class mapPlots():
                     if self.is_str_Float(ibat):
                         ibat = float(ibat)
                         pwr = abs((float(ibat) * float(vbats[idx])) / 1000) #we don't want to show charging as a negitive power....
-                        colors.append(idx) #FIXME pwr)
+                        colors.append(pwr) #FIXME pwr)
                     else:
-                        colors.append(idx) #(0) FIXME ww6/15/22
+                        colors.append(0)
             elif stat == 'soc':
                 stat_symbol = "%"
                 stat_name = "State of Charge"
@@ -181,6 +181,8 @@ class mapPlots():
             df = df.dropna()
             df = df[df.lats != '']
             df = df[df.lons != '']
+            df = df[df.lats != 0.0]
+            df = df[df.lons != 0.0]
             df = df[df.lats != 'None']
             df = df[df.lons != 'None']
             df = df[df.lats != 'lat']
@@ -190,7 +192,7 @@ class mapPlots():
             df[stat_symbol] = df[stat_symbol].astype(float)
 
             #down sample before plotting
-            df=df.iloc[::10, :]
+            df=df.iloc[2::10, :]
 
             max_bound = max(abs(df.lats.max() - df.lats.min()), abs(df.lons.min() - df.lons.max())) * 111 #todo: change this const to a variable with a discription of what it is
             zoom = 14 - np.log(max_bound)
@@ -203,22 +205,28 @@ class mapPlots():
             center_lon = (xspan/2) + x1
             center_lat = (yspan/2) + y1
 
+            if stat == 'soc':
+                fig = px.scatter_mapbox(df, lat=df.lats, lon=df.lons, color=df[stat_symbol], color_continuous_scale='aggrnyl')  # 'rainbow')
+            else:
+                fig = px.scatter_mapbox(df, lat=df.lats, lon=df.lons, color=df[stat_symbol], color_continuous_scale='rainbow')
 
-            fig = px.scatter_mapbox(df, lat=df.lats, lon=df.lons, color=df[stat_symbol], color_continuous_scale='rainbow')
-
-            for zoom in range(4,24,4):
-                fig.update_mapboxes(zoom=zoom, center_lat=center_lat, center_lon=center_lon)
-                fig.update_layout(title='Trip Map: ' + stat_name, title_x=0.5, mapbox_style='carto-positron',
-                                  font_family='Helvetica',
-                                  font_size=10,
-                                  font_color='blue',
-                                  title_font_family='Helvetica',
-                                  title_font_size=20,
-                                  title_font_color='blue',
-                                  )
-           #     fig.data[0].update(zmin=0.0, zmax=100)
-                fig.write_image(maps_dir + 'zoomlevel_'+str(zoom)+ '_' + image_name, width=1280, height=640)
+            #for zoom in range(12,13,1): #TODO zero in on good zoom level
+            zoom=12
+            fig.update_mapboxes(zoom=zoom, center_lat=center_lat, center_lon=center_lon)
+            fig.update_layout(title='Trip Map: ' + stat_name, title_x=0.5, mapbox_style='carto-positron',
+                              font_family='Helvetica',
+                              font_size=10,
+                              font_color='blue',
+                              title_font_family='Helvetica',
+                              title_font_size=20,
+                              title_font_color='blue',
+                              )
+       #     fig.data[0].update(zmin=0.0, zmax=100)
+            fig.write_image(maps_dir + image_name, width=1280, height=640)
         except Exception as e:
             return 'plot_coords part 4 - ERROR: ' + str(e)
             self.usage()
+        #image_name = 'zoomlevel_' + str(zoom) + '_' + image_name
         return maps_dir + image_name
+
+

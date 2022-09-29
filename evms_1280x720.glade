@@ -38,7 +38,7 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">20</property>
+                <property name="x">25</property>
                 <property name="y">5</property>
               </packing>
             </child>
@@ -187,7 +187,7 @@
                 <property name="halign">center</property>
                 <property name="valign">center</property>
                 <property name="label" translatable="yes">MOTOR
-°C</property>
+ °C</property>
                 <property name="justify">center</property>
                 <attributes>
                   <attribute name="font-desc" value="Ubuntu Mono Bold 16"/>
@@ -782,7 +782,7 @@ PWR (kW)</property>
               </object>
               <packing>
                 <property name="x">1060</property>
-                <property name="y">503</property>
+                <property name="y">507</property>
               </packing>
             </child>
             <child>
@@ -808,14 +808,14 @@ PWR (kW)</property>
                 <property name="halign">center</property>
                 <property name="valign">center</property>
                 <property name="label" translatable="yes">CTRL
-°C  </property>
+ °C  </property>
                 <property name="justify">center</property>
                 <attributes>
                   <attribute name="font-desc" value="Ubuntu Mono Bold 16"/>
                 </attributes>
               </object>
               <packing>
-                <property name="x">205</property>
+                <property name="x">200</property>
                 <property name="y">5</property>
               </packing>
             </child>
@@ -860,7 +860,7 @@ PWR (kW)</property>
               </object>
               <packing>
                 <property name="x">153</property>
-                <property name="y">80</property>
+                <property name="y">85</property>
               </packing>
             </child>
             <child>
@@ -871,7 +871,7 @@ PWR (kW)</property>
               </object>
               <packing>
                 <property name="x">212</property>
-                <property name="y">80</property>
+                <property name="y">85</property>
               </packing>
             </child>
             <child>
@@ -980,6 +980,19 @@ PWR (kW)</property>
               <packing>
                 <property name="x">239</property>
                 <property name="y">410</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="bat_max">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="halign">start</property>
+                <property name="valign">start</property>
+                <property name="label" translatable="yes">100%</property>
+              </object>
+              <packing>
+                <property name="x">50</property>
+                <property name="y">85</property>
               </packing>
             </child>
           </object>
