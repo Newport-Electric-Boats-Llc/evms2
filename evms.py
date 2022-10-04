@@ -2060,7 +2060,7 @@ class App:
         except Exception as e:
             log("Exception gps_reader_thread: " + str(e))
 
-    def can_reader_thread(self, interface):
+    def can_processing_thread(self, interface):
 
         try:
             log("starting CAN thread")
