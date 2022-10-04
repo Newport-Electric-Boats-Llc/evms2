@@ -70,7 +70,7 @@ class App:
 
     def __init__(self):
 
-        self.sw_ver_evms = "1.0.0" #toggling MPO on BMS
+        self.sw_ver_evms = "1.0.4" #toggling MPO on BMS
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -78,6 +78,7 @@ class App:
         self.app_logging_enabled = True  # ALWAYS TRUE
         self.sys_logging_enabled = True
         self.can_tx_msgs = False
+        self.lfp_banks = 1
         self.select_lfp_bank_2 = False
 
         self.config_info = self.read_evms_system_settings()
@@ -263,7 +264,7 @@ class App:
                 log('Selected ' + tab_list[index] + ' Tab')
             except:
                 log('Exception on_switch_tab' + str(e))
-
+        
         def update_line_skip(button, skip):
             self.line_skip = skip
 
@@ -1182,7 +1183,7 @@ class App:
                     break
 
                 try:
-                    if lfp_banks > 1:
+                    if self.lfp_banks > 1:
                         if self.dat.runTime_100ms % 2 == 0:  # transmit outbound can message(s) every 200 ms
                             self.can_tx_msgs = True
 
@@ -1196,14 +1197,14 @@ class App:
                     # print("self.dat.runTime_100ms={:.d}".format(self.dat.runTime_100ms))
                     self.dat.pwr_10hz = np.roll(self.dat.pwr_10hz, 1)
                     self.dat.pwr_10hz[0] = self.dat.pwr
-
+                    
                     self.dat.rpm_10hz = np.roll(self.dat.rpm_10hz, 1)
                     self.dat.rpm_10hz[0] = self.dat.rpm
-
+                    
                     self.dat.spd_10hz = np.roll(self.dat.spd_10hz, 1)
                     self.dat.spd_10hz[0] = self.dat.spd
-
-
+                    
+                    
                     # print("self.dat.pwr_10hz[{:d}] = {:0.4f}".format(self.dat.runTime_100ms,self.dat.pwr_10hz[self.dat.runTime_100ms]))
 
                     self.update_runTimer()
@@ -1591,7 +1592,7 @@ class App:
         try:
             ctx_ctrlTemp.set_source_rgb(0.8, .8, .8)  # bar background color
             ctx_ctrlTemp.set_line_width(50)
-
+            
             gauge_width = 30
             top_right = 200  # mid-point startup condition until can data available.
             battery_widget_height = 400
