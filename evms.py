@@ -50,7 +50,7 @@ def log(message):
 
 class App:
     def __init__(self):
-        self.sw_ver_evms = "1.1.0"
+        self.sw_ver_evms = "1.1.1"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -189,16 +189,6 @@ class App:
                             '+6': ('Asia/Dhaka', 'BST'), '+7': ('Asia/Bangkok', 'ICT'), '+8': ('Asia/Taipei', 'CST'),
                             '+9': ('Asia/Tokyo', 'JST'), '+10': ('Australia/Canberra', 'AEST'),
                             '+11': ('Pacific/Guadalcanal', 'SBT'), '+12': ('Pacific/Auckland', 'NZST')}
-        #hide widgets on the system settings tab that aren't currently being used
-            self.gps_units.hide()
-            self.hdg_combo.hide()
-            self.time_combo.hide()
-
-
-
-
-
-
 
 
         except Exception as e:
