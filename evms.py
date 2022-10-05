@@ -50,7 +50,7 @@ def log(message):
 
 class App:
     def __init__(self):
-        self.sw_ver_evms = "1.0.5"
+        self.sw_ver_evms = "1.0.6"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -214,7 +214,7 @@ class App:
                     text = text.split(' ')[1]
                     text = text.split(':')[0]
                     zone = self.tz_dict[text]
-                subprocess.run('echo Nebcloud! | sudo -S timedatectl set-timezone ' + zone[0], shell=True)
+                subprocess.run('echo sysHandle | sudo -S timedatectl set-timezone ' + zone[0], shell=True)
                 time.tzset()
                 GLib.idle_add(self.lbl_eng_timezone.set_label, zone[1])
                 GLib.idle_add(self.lbl_eng_offsetFromUtc.set_label, str(-timezone / 60 / 60))
@@ -348,7 +348,7 @@ class App:
                 wifi_name = self.wifi_combobox.get_active_text()
                 pswd = self.wifi_password_box.get_text()
                 p = subprocess.run(
-                    'echo Nebcloud! | sudo -S nmcli d wifi connect ' + wifi_name + ' password ' + pswd + ' ifname wlp3s0',
+                    'echo sysHandle | sudo -S nmcli d wifi connect ' + wifi_name + ' password ' + pswd + ' ifname wlp3s0',
                     shell=True)
                 self.text_log_buffer = self.wifi_txtbox.get_buffer()
                 if p.returncode == 0:
@@ -377,7 +377,7 @@ class App:
                 self.wifi_combobox.set_active(0)
                 sleep(1)
                 self.wifi_box_list = subprocess.check_output(
-                     "echo Nebcloud! | for i in $(ls /sys/class/net/ | egrep -v ^lo$); do sudo -S iw dev $i scan | grep SSID | awk '{print substr($0, index($0,$2)) }'; done 2>/dev/null | sort -u",
+                     "echo sysHandle | for i in $(ls /sys/class/net/ | egrep -v ^lo$); do sudo -S iw dev $i scan | grep SSID | awk '{print substr($0, index($0,$2)) }'; done 2>/dev/null | sort -u",
                      shell=True).decode('utf-8')
                 self.wifi_box_list = self.wifi_box_list.replace('\t', '')
                 self.wifi_box_list = self.wifi_box_list.replace('SSID: \nSSID List\n', '').split('\n')
