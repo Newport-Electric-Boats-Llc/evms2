@@ -50,7 +50,7 @@ def log(message):
 
 class App:
     def __init__(self):
-        self.sw_ver_evms = "1.0.7"
+        self.sw_ver_evms = "1.0.8"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -1924,7 +1924,8 @@ class App:
             try:
                 s = self.gpsPort.readline()
                 if self.gps_logging_enabled == True:
-                    self.GPSLog.write(s) #send raw gps sentence to gps logfile
+                    if self.GPSLog is not None:
+                        self.GPSLog.write(s) #send raw gps sentence to gps logfile
 
                 if self.gps_from_file == True:
                     first_chr = s[0]
