@@ -2861,6 +2861,7 @@ PWR (kW)</property>
                     <property name="name">widget_btn_restart</property>
                     <property name="width_request">100</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="halign">start</property>
@@ -2877,6 +2878,7 @@ PWR (kW)</property>
                     <property name="name">btn_back10</property>
                     <property name="width_request">50</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                   </object>
@@ -2893,6 +2895,7 @@ PWR (kW)</property>
                     <property name="width_request">50</property>
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                   </object>
@@ -2909,6 +2912,7 @@ PWR (kW)</property>
                     <property name="width_request">50</property>
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                   </object>
@@ -2925,6 +2929,7 @@ PWR (kW)</property>
                     <property name="width_request">50</property>
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                   </object>
@@ -2939,6 +2944,7 @@ PWR (kW)</property>
                     <property name="name">widget_trip_combo_box</property>
                     <property name="width_request">200</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">False</property>
                     <items>
                       <item translatable="yes">Power</item>
@@ -2957,6 +2963,7 @@ PWR (kW)</property>
                     <property name="name">widget_triplog_combobox</property>
                     <property name="width_request">560</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">False</property>
                   </object>
                   <packing>
@@ -3008,39 +3015,11 @@ PWR (kW)</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkComboBoxText" id="id_wifi_combobox">
-                    <property name="name">widget_wifi_combobox</property>
-                    <property name="width_request">300</property>
-                    <property name="height_request">50</property>
-                    <property name="visible">True</property>
-                    <property name="app_paintable">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">WiFi Networks</property>
-                  </object>
-                  <packing>
-                    <property name="x">970</property>
-                    <property name="y">50</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="id_btn_wifi_connect">
-                    <property name="label" translatable="yes">Connect</property>
-                    <property name="name">widget_btn_wifi_connect</property>
-                    <property name="visible">True</property>
-                    <property name="app_paintable">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                  </object>
-                  <packing>
-                    <property name="x">970</property>
-                    <property name="y">110</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkEntry" id="id_wifi_password">
                     <property name="name">widget_wifi_password</property>
                     <property name="width_request">210</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="app_paintable">True</property>
                     <property name="can_focus">True</property>
                     <property name="primary_icon_tooltip_text" translatable="yes">password</property>
@@ -3066,36 +3045,6 @@ PWR (kW)</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="id_gps_logging">
-                    <property name="label" translatable="yes">GPS Logging</property>
-                    <property name="name">widget_gps_logging</property>
-                    <property name="width_request">100</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">False</property>
-                    <property name="draw_indicator">True</property>
-                  </object>
-                  <packing>
-                    <property name="x">10</property>
-                    <property name="y">70</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="id_can_logging">
-                    <property name="label" translatable="yes">CAN Logging</property>
-                    <property name="name">widget_can_logging</property>
-                    <property name="width_request">100</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">False</property>
-                    <property name="draw_indicator">True</property>
-                  </object>
-                  <packing>
-                    <property name="x">10</property>
-                    <property name="y">100</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkLabel" id="id_logfile_creation_label">
                     <property name="name">widget_logfile_creation_label</property>
                     <property name="visible">True</property>
@@ -3111,24 +3060,9 @@ PWR (kW)</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel">
-                    <property name="width_request">100</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Application Log: </property>
-                    <attributes>
-                      <attribute name="font-desc" value="Sans Bold 12"/>
-                    </attributes>
-                  </object>
-                  <packing>
-                    <property name="x">10</property>
-                    <property name="y">275</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkScrolledWindow" id="id_wifi_scrolled_window">
                     <property name="width_request">1260</property>
-                    <property name="height_request">375</property>
+                    <property name="height_request">450</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="shadow_type">in</property>
@@ -3152,98 +3086,13 @@ PWR (kW)</property>
                     <property name="label" translatable="yes">Software Update...</property>
                     <property name="width_request">220</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                   </object>
                   <packing>
                     <property name="x">1050</property>
                     <property name="y">240</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="id_sys_ckbox_3">
-                    <property name="label" translatable="yes">id_sys_ckbox_3</property>
-                    <property name="name">widget_gps_logging</property>
-                    <property name="width_request">100</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">False</property>
-                    <property name="draw_indicator">True</property>
-                  </object>
-                  <packing>
-                    <property name="x">300</property>
-                    <property name="y">75</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="id_sys_ckbox_7">
-                    <property name="label" translatable="yes">id_sys_ckbox_7</property>
-                    <property name="name">widget_gps_logging</property>
-                    <property name="width_request">100</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">False</property>
-                    <property name="draw_indicator">True</property>
-                  </object>
-                  <packing>
-                    <property name="x">450</property>
-                    <property name="y">75</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="id_sys_ckbox_4">
-                    <property name="label" translatable="yes">id_sys_ckbox_4</property>
-                    <property name="name">widget_gps_logging</property>
-                    <property name="width_request">100</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">False</property>
-                    <property name="draw_indicator">True</property>
-                  </object>
-                  <packing>
-                    <property name="x">150</property>
-                    <property name="y">100</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="id_sys_ckbox_6">
-                    <property name="label" translatable="yes">id_sys_ckbox_6</property>
-                    <property name="name">widget_gps_logging</property>
-                    <property name="width_request">100</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">False</property>
-                    <property name="draw_indicator">True</property>
-                  </object>
-                  <packing>
-                    <property name="x">150</property>
-                    <property name="y">70</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="id_sys_ckbox_5">
-                    <property name="label" translatable="yes">id_sys_ckbox_5</property>
-                    <property name="name">widget_gps_logging</property>
-                    <property name="width_request">100</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">False</property>
-                    <property name="draw_indicator">True</property>
-                  </object>
-                  <packing>
-                    <property name="x">300</property>
-                    <property name="y">100</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="id_sys_ckbox_8">
-                    <property name="label" translatable="yes">id_sys_ckbox_8</property>
-                    <property name="name">widget_gps_logging</property>
-                    <property name="width_request">100</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">False</property>
-                    <property name="draw_indicator">True</property>
-                  </object>
-                  <packing>
-                    <property name="x">450</property>
-                    <property name="y">100</property>
                   </packing>
                 </child>
                 <child>
@@ -3277,6 +3126,7 @@ PWR (kW)</property>
                     <property name="width_request">370</property>
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="app_paintable">True</property>
                     <property name="can_focus">True</property>
                   </object>
@@ -3286,10 +3136,91 @@ PWR (kW)</property>
                   </packing>
                 </child>
                 <child>
+                  <object class="GtkButton" id="btn_wifi_network">
+                    <property name="label" translatable="yes">Network...</property>
+                    <property name="name">widget_btn_wifi_ssid</property>
+                    <property name="width_request">120</property>
+                    <property name="sensitive">False</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">900</property>
+                    <property name="y">240</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="id_btn_wifi_connect">
+                    <property name="label" translatable="yes">Connect</property>
+                    <property name="name">widget_btn_wifi_connect</property>
+                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
+                    <property name="app_paintable">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">970</property>
+                    <property name="y">110</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkComboBoxText" id="id_wifi_combobox">
+                    <property name="name">widget_wifi_combobox</property>
+                    <property name="width_request">300</property>
+                    <property name="height_request">50</property>
+                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
+                    <property name="app_paintable">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="tooltip_text" translatable="yes">WiFi Networks</property>
+                  </object>
+                  <packing>
+                    <property name="x">970</property>
+                    <property name="y">50</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="btn_keyboard_dialog">
+                    <property name="label" translatable="yes">Keyboard...</property>
+                    <property name="name">keyboard</property>
+                    <property name="width_request">120</property>
+                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">700</property>
+                    <property name="y">240</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkComboBoxText" id="id_combo_4">
+                    <property name="width_request">200</property>
+                    <property name="height_request">50</property>
+                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
+                    <property name="app_paintable">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <items>
+                      <item translatable="yes">id_combo_4</item>
+                      <item translatable="yes">Timezone</item>
+                    </items>
+                  </object>
+                  <packing>
+                    <property name="x">220</property>
+                    <property name="y">130</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkComboBoxText" id="id_gps_units">
                     <property name="width_request">200</property>
                     <property name="height_request">50</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="app_paintable">True</property>
                     <property name="can_focus">True</property>
                     <property name="has_focus">True</property>
@@ -3308,29 +3239,11 @@ PWR (kW)</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkComboBoxText" id="id_combo_4">
-                    <property name="width_request">200</property>
-                    <property name="height_request">50</property>
-                    <property name="visible">True</property>
-                    <property name="app_paintable">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="halign">center</property>
-                    <property name="valign">center</property>
-                    <items>
-                      <item translatable="yes">id_combo_4</item>
-                      <item translatable="yes">Timezone</item>
-                    </items>
-                  </object>
-                  <packing>
-                    <property name="x">220</property>
-                    <property name="y">130</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkComboBoxText" id="id_hdg_combo">
                     <property name="width_request">200</property>
                     <property name="height_request">50</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="app_paintable">True</property>
                     <property name="can_focus">True</property>
                     <property name="halign">center</property>
@@ -3347,111 +3260,66 @@ PWR (kW)</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkComboBoxText" id="id_combo_3">
-                    <property name="width_request">150</property>
+                  <object class="GtkLabel">
+                    <property name="width_request">100</property>
                     <property name="visible">True</property>
-                    <property name="app_paintable">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="halign">center</property>
-                    <property name="valign">center</property>
-                    <items>
-                      <item translatable="yes">id_combo_3</item>
-                      <item translatable="yes">unused</item>
-                    </items>
-                  </object>
-                  <packing>
-                    <property name="x">700</property>
-                    <property name="y">190</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="id_sys_lable_1">
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">id_sys_lable_1</property>
+                    <property name="label" translatable="yes">Application Log: </property>
+                    <attributes>
+                      <attribute name="font-desc" value="Sans Bold 12"/>
+                    </attributes>
                   </object>
                   <packing>
-                    <property name="x">700</property>
-                    <property name="y">150</property>
+                    <property name="x">10</property>
+                    <property name="y">275</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="id_sys_lable_5">
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">id_sys_lable_5</property>
-                  </object>
-                  <packing>
-                    <property name="x">700</property>
-                    <property name="y">120</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="id_sys_lable_2">
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">id_sys_lable_2</property>
-                  </object>
-                  <packing>
-                    <property name="x">450</property>
-                    <property name="y">210</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="id_sys_lable_3">
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">id_sys_lable_3</property>
-                  </object>
-                  <packing>
-                    <property name="x">450</property>
-                    <property name="y">150</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="id_sys_lable_4">
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">id_sys_lable_4</property>
-                  </object>
-                  <packing>
-                    <property name="x">450</property>
-                    <property name="y">180</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="btn_wifi_network">
-                    <property name="label" translatable="yes">Network...</property>
-                    <property name="name">widget_btn_wifi_ssid</property>
-                    <property name="width_request">120</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                  </object>
-                  <packing>
-                    <property name="x">900</property>
-                    <property name="y">240</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="btn_keyboard_dialog">
-                    <property name="label" translatable="yes">Keyboard...</property>
-                    <property name="name">keyboard</property>
-                    <property name="width_request">120</property>
+                  <object class="GtkCheckButton" id="id_sys_ckbox_6">
+                    <property name="label" translatable="yes">id_sys_ckbox_6</property>
+                    <property name="name">widget_gps_logging</property>
+                    <property name="width_request">100</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="draw_indicator">True</property>
                   </object>
                   <packing>
-                    <property name="x">700</property>
-                    <property name="y">240</property>
+                    <property name="x">150</property>
+                    <property name="y">70</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="btn_spare_btn">
-                    <property name="label" translatable="yes">Spare Button...</property>
-                    <property name="name">keyboard</property>
+                  <object class="GtkCheckButton" id="id_can_logging">
+                    <property name="label" translatable="yes">CAN Logging</property>
+                    <property name="name">widget_can_logging</property>
+                    <property name="width_request">100</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="draw_indicator">True</property>
                   </object>
                   <packing>
-                    <property name="x">450</property>
-                    <property name="y">240</property>
+                    <property name="x">10</property>
+                    <property name="y">100</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="id_gps_logging">
+                    <property name="label" translatable="yes">GPS Logging</property>
+                    <property name="name">widget_gps_logging</property>
+                    <property name="width_request">100</property>
+                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="draw_indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">10</property>
+                    <property name="y">70</property>
                   </packing>
                 </child>
               </object>

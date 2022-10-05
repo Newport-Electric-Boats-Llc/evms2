@@ -50,7 +50,7 @@ def log(message):
 
 class App:
     def __init__(self):
-        self.sw_ver_evms = "1.0.8"
+        self.sw_ver_evms = "1.0.9"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -189,6 +189,18 @@ class App:
                             '+6': ('Asia/Dhaka', 'BST'), '+7': ('Asia/Bangkok', 'ICT'), '+8': ('Asia/Taipei', 'CST'),
                             '+9': ('Asia/Tokyo', 'JST'), '+10': ('Australia/Canberra', 'AEST'),
                             '+11': ('Pacific/Guadalcanal', 'SBT'), '+12': ('Pacific/Auckland', 'NZST')}
+        #hide widgets on the system settings tab that aren't currently being used
+            self.gps_units.hide()
+            self.hdg_combo.hide()
+            self.time_combo.hide()
+
+
+
+
+
+
+
+
         except Exception as e:
             log('Exception __init__ ' + str(e))
 
@@ -232,7 +244,7 @@ class App:
 
         def on_switch_tab(notebook, tab, index):
             try:
-                tab_list = ['Instruments', 'CAN Data', 'TripLog', 'System', 'About']
+                tab_list = ['Instruments', 'CAN Data', 'TripLog', 'System', 'AppLog', 'About']
                 log('Selected ' + tab_list[index] + ' Tab')
                 return True # to prevent event from propagation and stop event from being fired twice
             except:
@@ -244,6 +256,7 @@ class App:
 
         self.notebook = self.builder.get_object('id_top_notebook')
         self.notebook.connect('switch-page', on_switch_tab)
+
         self.time_combo = self.builder.get_object('id_combo_4')
         fill_time()
         self.time_combo.connect('changed', change_timezone)
@@ -1675,7 +1688,7 @@ class App:
 
             if self.dat.rpm is not None:
                 percent_rpm = self.dat.rpm / self.max_rpm
-                if self.dat.rpm >= 0:
+                if (self.dat.rev_bit == False):
                     rpm_end_angle = start_angle + min(0.99, percent_rpm) * (2 * pi) * pegged
                 else: # THE PROP IS SPINNING IN REVERSE
                     rpm_end_angle = start_angle - min(0.99, percent_rpm) * (2 * pi) * pegged
