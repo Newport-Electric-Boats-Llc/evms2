@@ -50,7 +50,7 @@ def log(message):
 
 class App:
     def __init__(self):
-        self.sw_ver_evms = "1.0.9"
+        self.sw_ver_evms = "1.1.0"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -922,6 +922,32 @@ class App:
         self.stop_timing_thread = True
         gtk.main_quit()
 
+    def increment_odemeter(self):
+        # update file with cumulitive runtime in minutes, and cumulitive power in kW
+        odometerfile = 'odometer.dat'
+        runtime_mins = 0.0
+        cumpower = 0.0
+        try:
+            file = open(odometerfile)
+            lines = file.readlines()
+            print(lines)
+            for line in lines:
+                if line != '\n':
+                    line = line.rstrip()
+                    line = line.replace(' ', '')
+                    line = line.split(',')
+                    if line[0] == 'odometer':
+                        runtime_mins = float(line[1]) + 1.0
+                        cumpower     = float(line[2]) + float(self.dat.pwr_min[0])
+                    else:
+                        log('error reading system.dat')
+        except Exception as e:
+            log("increment_odemeter read: " + str(e))
+        try:
+            open(odometerfile, 'w+').writelines('odometer, ' + str(runtime_mins) + ', ' + str(cumpower) + '\n')
+        except Exception as e:
+            log("increment_odemeter write: " + str(e))
+
     def read_evms_cfg_settings(self):
         file = open('evms_cfg_settings.cfg', 'r+')
         lines = file.readlines()
@@ -1161,7 +1187,7 @@ class App:
                         self.dat.clear_dataholder_log()
 
                     # -- motor power calculations --
-                    self.dat.pwr = self.dat.get_motor_pwr()[0]
+                    self.dat.pwr = self.dat.get_motor_pwr()[0] #power in kW (consumed by the motor from the battery)
                     # print("self.dat.runTime_100ms={:.d}".format(self.dat.runTime_100ms))
                     self.dat.pwr_10hz = np.roll(self.dat.pwr_10hz, 1)
                     self.dat.pwr_10hz[0] = self.dat.pwr
@@ -1242,6 +1268,8 @@ class App:
         # position.set_value(position.get_upper())
         # self.scroll_window.set_vadjustment(position)
 
+
+
     def do_OneMinTasks(self):
 
         try:
@@ -1255,6 +1283,8 @@ class App:
 
             self.dat.spd_min = np.roll(self.dat.spd_min, 1)
             self.dat.spd_min[0] = np.average(self.dat.spd_sec)
+            #!@#
+            self.increment_odemeter()
             # log("pwr_min = {:04.2f}".format(float(self.dat.pwr_sec[self.dat.runTime_sec])) +
             #     ", rpm_min = {:04.0f}".format(float(self.dat.rpm_sec[self.dat.runTime_sec])) +
             #     ", spd_min = {:04.1f}".format(float(self.dat.spd_sec[self.dat.runTime_sec])))
@@ -1701,7 +1731,7 @@ class App:
                     pwr_end_angle = start_angle + percent_pwr * (2 * pi) * pegged
                 if self.dat.spd is not None:
                     # NOTE: min(self.dat.pwr,.1) used for now, to limit eff angle
-                    eff_end_angle = start_angle + self.dat.spd / max(self.dat.pwr * (2 * pi) * pegged, .1)
+                    eff_end_angle = spd_end_angle - pwr_end_angle
 
         except Exception as e:
             log("Error - on_draw_ring_gauge part 1: " + str(e))
@@ -1717,6 +1747,7 @@ class App:
                     start_angle + 2 * pi * .8)
             ctx.stroke()
 
+            # small experimental efficency ring
             ctx.set_source_rgb(0, 1, 0)  # green
             ctx.set_line_width(1)
             ctx.arc(gaugeWidth,
@@ -1751,11 +1782,18 @@ class App:
 
             ctx.set_line_width(line_width)
             ctx.set_tolerance(0.1)
-            ctx.arc(gaugeWidth,
-                    radius,
-                    radius * 0.7,
-                    start_angle,
-                    rpm_end_angle)
+            if (self.dat.rev_bit == False):
+                ctx.arc(gaugeWidth,
+                        radius,
+                        radius * 0.7,
+                        start_angle,
+                        rpm_end_angle)
+            else:
+                ctx.arc(gaugeWidth,
+                        radius,
+                        radius * 0.7,
+                        rpm_end_angle,
+                        start_angle)
             ctx.stroke()
             # ctx.set_source_rgb(0.3, 0.4, 0.6)
             ctx.set_source_rgb(1, 1, 1)
@@ -1779,11 +1817,18 @@ class App:
 
                 ctx.set_line_width(line_width)
                 ctx.set_tolerance(0.1)
-                ctx.arc(gaugeWidth,
-                        radius,
-                        radius * 0.5,
-                        start_angle,
-                        pwr_end_angle)
+                if(start_angle < pwr_end_angle):
+                    ctx.arc(gaugeWidth,
+                            radius,
+                            radius * 0.5,
+                            start_angle,
+                            pwr_end_angle)
+                else:
+                    ctx.arc(gaugeWidth,
+                            radius,
+                            radius * 0.5,
+                            pwr_end_angle,
+                            start_angle)
             ctx.stroke()
             # ctx.set_source_rgb(0.3, 0.4, 0.6)
             ctx.set_source_rgb(1, 1, 1)
