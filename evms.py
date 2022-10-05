@@ -50,7 +50,7 @@ def log(message):
 
 class App:
     def __init__(self):
-        self.sw_ver_evms = "1.0.6"
+        self.sw_ver_evms = "1.0.7"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -109,13 +109,14 @@ class App:
             self.c_data = ''
             self.builder = gtk.Builder()
             # if self.display_size == '1280x720':
-            self.builder.add_from_file("evms_1280x720.glade")
+            #self.builder.add_from_file("evms_1280x720.glade")
+            self.builder.add_from_file("evms_1280x800.glade")
 
         except Exception as e:
             log('Exception __init__ part 3: ' + str(e))
 
         try:
-            self.dat.max_y_scale_bar_hist = 150  # widow height is 220
+            self.dat.max_y_scale_bar_hist = 220 #150  # widow height is 220+80
             self.dat.y_offset = 0  # 10 pix margin at bottom and top
             self.dat.pwr_graph_x_ofst = 0
             self.dat.pwr_graph_width_pix = 1280
@@ -233,8 +234,10 @@ class App:
             try:
                 tab_list = ['Instruments', 'CAN Data', 'TripLog', 'System', 'About']
                 log('Selected ' + tab_list[index] + ' Tab')
+                return True # to prevent event from propagation and stop event from being fired twice
             except:
                 log('Exception on_switch_tab' + str(e))
+            return True # to prevent event from propagation and stop event from being fired twice
         
         def update_line_skip(button, skip):
             self.line_skip = skip
@@ -274,7 +277,7 @@ class App:
         self.trip_data_type = ''
         self.line_skip = 1
         self.notebook = self.builder.get_object('id_top_notebook')
-        self.notebook.connect('switch-page', on_switch_tab)
+        #self.notebook.connect('switch-page', on_switch_tab)
         self.about_text_buffer = self.about_cfg_txtbox.get_buffer()
         self.about_text_buffer.set_text(''.join(self.config_info))
         self.about_top_buffer.set_text(self.evms_about_top_text)
@@ -907,7 +910,7 @@ class App:
         gtk.main_quit()
 
     def read_evms_cfg_settings(self):
-        file = open('evms_system_settings.cfg', 'r+')
+        file = open('evms_cfg_settings.cfg', 'r+')
         lines = file.readlines()
         for line in lines:
             if line != '\n':
@@ -920,10 +923,10 @@ class App:
                     self.max_spd = float(line[1])
                 elif line[0] == 'max_pwr':
                     self.max_pwr = float(line[1])
-                elif line[0] == 'max_mot_temp_scale':
-                    self.max_mot_temp_scale = float(line[1])
-                elif line[0] == 'max_mot_ctrl_temp_scale':
-                    self.max_mot_ctrl_temp_scale = float(line[1])
+                elif line[0] == 'mot_temp_max_scale':
+                    self.mot_temp_max_scale = float(line[1])
+                elif line[0] == 'ctrl_temp_max_scale':
+                    self.ctrl_temp_max_scale = float(line[1])
                 elif line[0] == 'battery_size':
                     self.battery_size = float(line[1])
                 elif line[0] == 'system_logging_level':
@@ -1254,11 +1257,11 @@ class App:
             self.dat.pwr_hrs = np.roll(self.dat.pwr_hrs, 1)
             self.dat.pwr_hrs[0] = np.average(self.dat.pwr_min)
 
-            self.dat.rpm_hr = np.roll(self.dat.rpm_hr, 1)
-            self.dat.rpm_hr[0] = np.average(self.dat.rpm_min)
+            self.dat.rpm_hrs = np.roll(self.dat.rpm_hrs, 1)
+            self.dat.rpm_hrs[0] = np.average(self.dat.rpm_min)
 
-            self.dat.spd_hr = np.roll(self.dat.spd_hr, 1)
-            self.dat.spd_hr[0] = np.average(self.dat.spd_min)
+            self.dat.spd_hrs = np.roll(self.dat.spd_hrs, 1)
+            self.dat.spd_hrs[0] = np.average(self.dat.spd_min)
             # log("pwr_min = {:04.2f}".format(float(self.dat.pwr_sec[self.dat.runTime_min])) +
             #     ", rpm_min = {:04.0f}".format(float(self.dat.rpm_sec[self.dat.runTime_min])) +
             #     ", spd_min = {:04.1f}".format(float(self.dat.spd_sec[self.dat.runTime_min])))
@@ -1444,7 +1447,7 @@ class App:
 
     def draw_bar_hist(self, da_pwr_hist, ctx_bar_hist, graph_var):
 
-        max_y = self.dat.max_y_scale_bar_hist = 150
+        max_y = self.dat.max_y_scale_bar_hist
         if self.bar_history.get_active_text() == 'RPM':
             bar_max = self.max_rpm
             ctx_bar_hist.set_source_rgb(self.dat.rpm_R, self.dat.rpm_G, self.dat.rpm_B)
@@ -1534,7 +1537,7 @@ class App:
 
             if self.dat.mot_ctrl_temp is not None:
                 # log("SOC = " + str(self.data_holder.soc))
-                top_right = battery_widget_height * int(self.dat.mot_ctrl_temp) / self.max_mot_ctrl_temp_scale
+                top_right = battery_widget_height * int(self.dat.mot_ctrl_temp) / self.ctrl_temp_max_scale
                 ctx_ctrlTemp.rectangle(0, 0, gauge_width, battery_widget_height)
                 ctx_ctrlTemp.fill()
                 ctx_ctrlTemp.set_source_rgb(self.dat.tmp_R, self.dat.tmp_B, self.dat.tmp_G)  # bar color
@@ -1577,7 +1580,7 @@ class App:
 
             if self.dat.mot_temp is not None:
                 # log("SOC = " + str(self.data_holder.soc))
-                top_right = battery_widget_height * int(self.dat.mot_temp) / self.max_mot_temp_scale
+                top_right = battery_widget_height * int(self.dat.mot_temp) / self.mot_temp_max_scale
                 ctx_motTemp.rectangle(0, 0, 55, battery_widget_height)
                 ctx_motTemp.fill()
                 ctx_motTemp.set_source_rgb(self.dat.tmp_R, self.dat.tmp_B, self.dat.tmp_G)  # bar color

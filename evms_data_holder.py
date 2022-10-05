@@ -142,7 +142,7 @@ class DataHolder:
         self.pwr = 0
         self.rpm = 0
         self.spd = 0
-        self.max_y_scale_bar_hist = 150
+        self.max_y_scale_bar_hist = 220
 
         self.pwr_10hz = np.zeros(10)
         self.pwr_sec = np.zeros(60)
@@ -151,11 +151,11 @@ class DataHolder:
         self.rpm_10hz = np.zeros(10)
         self.rpm_sec = np.zeros(60)
         self.rpm_min = np.zeros(60)
-        self.rpm_hr = np.zeros(60)
+        self.rpm_hrs = np.zeros(60)
         self.spd_10hz = np.zeros(10) #
         self.spd_sec = np.zeros(60)
         self.spd_min = np.zeros(60)
-        self.spd_hr = np.zeros(60)
+        self.spd_hrs = np.zeros(60)
 
 
         # ---------------- GUI logging checkboxes ------------------------
