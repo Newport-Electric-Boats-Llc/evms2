@@ -70,7 +70,7 @@ class App:
 
     def __init__(self):
 
-        self.sw_ver_evms = "1.0.4" #toggling MPO on BMS
+        self.sw_ver_evms = "1.0.4"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -81,7 +81,7 @@ class App:
         self.lfp_banks = 1
         self.select_lfp_bank_2 = False
 
-        self.config_info = self.read_evms_system_settings()
+        self.config_info = self.read_evms_cfg_settings()
 
         self.dat = DataHolder()#'logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
         self.mapPlots = mapPlots('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
@@ -952,7 +952,7 @@ class App:
 
         gtk.main_quit()
 
-    def read_evms_system_settings(self):
+    def read_evms_cfg_settings(self):
         file = open('evms_system_settings.cfg', 'r+')
         lines = file.readlines()
         for line in lines:
@@ -966,10 +966,10 @@ class App:
                     self.max_spd = float(line[1])
                 elif line[0] == 'max_pwr':
                     self.max_pwr = float(line[1])
-                elif line[0] == 'max_mot_temp':
-                    self.max_mot_temp = float(line[1])
-                elif line[0] == 'max_mot_ctrl_temp':
-                    self.max_mot_ctrl_temp = float(line[1])
+                elif line[0] == 'max_mot_temp_scale':
+                    self.max_mot_temp_scale = float(line[1])
+                elif line[0] == 'max_mot_ctrl_temp_scale':
+                    self.max_mot_ctrl_temp_scale = float(line[1])
                 elif line[0] == 'battery_size':
                     self.battery_size = float(line[1])
                 elif line[0] == 'system_logging_level':
@@ -996,7 +996,7 @@ class App:
                 elif line[0] == 'gps_logging_enabled':
                     if line[1] == 'True':
                         self.gps_logging_enabled = True
-                    elif line[1] == 'False':
+                    else:
                         self.gps_logging_enabled = False
                 elif line[0] == 'lfp_banks':
                     self.lfp_banks == float(line[1])
@@ -1599,7 +1599,7 @@ class App:
 
             if self.dat.mot_ctrl_temp is not None:
                 # log("SOC = " + str(self.data_holder.soc))
-                top_right = battery_widget_height * int(self.dat.mot_ctrl_temp) / self.max_mot_ctrl_temp
+                top_right = battery_widget_height * int(self.dat.mot_ctrl_temp) / self.max_mot_ctrl_temp_scale
 
                 ctx_ctrlTemp.rectangle(0, 0, gauge_width, battery_widget_height)
                 ctx_ctrlTemp.fill()
@@ -1646,7 +1646,7 @@ class App:
 
             if self.dat.mot_temp is not None:
                 # log("SOC = " + str(self.data_holder.soc))
-                top_right = battery_widget_height * int(self.dat.mot_temp) / self.max_mot_temp
+                top_right = battery_widget_height * int(self.dat.mot_temp) / self.max_mot_temp_scale
                 ctx_motTemp.rectangle(0, 0, 55, battery_widget_height)
                 ctx_motTemp.fill()
 
