@@ -12,12 +12,10 @@ from can import Message
 import logging
 import sys
 
-# --- GLOBAL Variables -----
-#sw_ver_can = "0.9.4"
 
 class evms_can:
     def __init__(self, applog, buffer):
-        self.sw_ver_can = "1.0.0"
+        self.sw_ver_can = "1.0.1"
         self.applog = applog
         self.buffer = buffer
         logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO, handlers=[

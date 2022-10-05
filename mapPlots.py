@@ -25,7 +25,7 @@ maps_dir = '/home/neb/evms2/maps/'
 
 class mapPlots():
     def __init__(self, applog, buffer):
-        self.sw_ver_maps = '0.4.1'
+        self.sw_ver_maps = '0.4.2'
         self.applog = applog
         self.buffer = buffer
         logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO, handlers=[
@@ -136,7 +136,7 @@ class mapPlots():
                     if self.is_str_Float(ibat):
                         ibat = float(ibat)
                         pwr = abs((float(ibat) * float(vbats[idx])) / 1000) #we don't want to show charging as a negitive power....
-                        colors.append(pwr) #FIXME pwr)
+                        colors.append(pwr) # power color selection could be improved here.
                     else:
                         colors.append(0)
             elif stat == 'soc':

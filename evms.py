@@ -9,19 +9,11 @@
 ######################################################################################################################
 
 import gi
-# import os
 import sys
-# from sys import argv
 import logging
-# from dateutil import tz
-import gobject
-
 import remote
 import glob
 import csv
-import os
-
-# import panzoom
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk as gtk
@@ -35,23 +27,15 @@ import concurrent.futures
 from sys import argv
 import os
 import numpy as np
-
 from evms_data_holder import DataHolder
 from evms_can import evms_can
 from mapPlots import mapPlots
-#from remote import remote
 from datetime import datetime, timedelta
 import subprocess
-
 import pynmea2
-# import math
 from math import pi
 
-
-# import decimal as dc
-
 log_window_buffer = ''
-
 appStartDateString = datetime.now().strftime("%Y-%m-%d")
 appStartTimeString = datetime.now().strftime("%H:%M:%S")
 
@@ -59,18 +43,14 @@ logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO, hand
     logging.FileHandler('logs/' + appStartDateString + '_evms_app.log'),
     logging.StreamHandler(sys.stdout)])
 
-
 def log(message):
     global log_window_buffer
     log_window_buffer += message + '\n'
     logging.info(message)
 
-
 class App:
-
     def __init__(self):
-
-        self.sw_ver_evms = "1.0.4"
+        self.sw_ver_evms = "1.0.5"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -80,9 +60,7 @@ class App:
         self.can_tx_msgs = False
         self.lfp_banks = 1
         self.select_lfp_bank_2 = False
-
         self.config_info = self.read_evms_cfg_settings()
-
         self.dat = DataHolder()#'logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
         self.mapPlots = mapPlots('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
         self.evms_can = evms_can('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
@@ -120,7 +98,6 @@ class App:
             self.stop_gps_thread = False
             self.stop_can_thread = False
             self.stop_timing_thread = False
-
             self.init_gps_serial()
             self.init_can_interface()
 
@@ -130,7 +107,6 @@ class App:
             self.a_data = ''
             self.b_data = ''
             self.c_data = ''
-
             self.builder = gtk.Builder()
             # if self.display_size == '1280x720':
             self.builder.add_from_file("evms_1280x720.glade")
@@ -147,12 +123,9 @@ class App:
             self.dat.pwr_bin_shade = 18
             self.dat.GPS_FORMAT = 'DECIMAL'
             self.dat.HDG_UNITS = 'MAG'
-
             self.builder.connect_signals(self)
             self.window = self.builder.get_object("evms_window")
-
             self.bar_history_combobox = self.builder.get_object('id_bar_history_combobox')
-
             self.trip_viewport = self.builder.get_object('id_map_viewport')
             self.wifi_combobox = self.builder.get_object('id_wifi_combobox')
             self.wifi_password_box = self.builder.get_object('id_wifi_password')
@@ -166,7 +139,6 @@ class App:
             self.power_history_started = False
             self.ttd_max = 10
             self.ttd_min = -100
-
             self.id_about_txtbox_top = self.builder.get_object("id_about_txtbox_top")
             self.about_cfg_txtbox = self.builder.get_object("id_about_txtbox")
             self.btn_software_update = self.builder.get_object("id_software_update")
@@ -218,7 +190,6 @@ class App:
                             '+11': ('Pacific/Guadalcanal', 'SBT'), '+12': ('Pacific/Auckland', 'NZST')}
         except Exception as e:
             log('Exception __init__ ' + str(e))
-
 
         def fill_time():
             model = gtk.ListStore(str)
@@ -288,10 +259,8 @@ class App:
         self.tripBtn_Rs = self.builder.get_object("id_btn_restart")
         self.tripBtn_select = self.builder.get_object("id_trip_combo_box")
         self.triplog_select = self.builder.get_object("id_triplog_combobox")
-
         self.notification_textbox = self.builder.get_object('notification_textbox')
         self.notification_icon = self.builder.get_object('notification_icon')
-
         self.neb_logo = self.builder.get_object('id_neb_logo')
         self.bar_history = self.builder.get_object('id_bar_history_combobox')
         #self.keyboard = self.builder.get_object('id_keyboard')
@@ -312,10 +281,8 @@ class App:
         #self.about_text_buffer_header = ''
         #self.about_text_buffer_header.set_text("")
         self.bar_history.set_active(0)
-
         self.active_txtbox = None
         self.active_txt_buffer = None
-      #  self.active_end_iter = None
         self.kbd_esc = self.builder.get_object('kbd_escape')
         self.kbd_1 = self.builder.get_object('kbd_1')
         self.kbd_2 = self.builder.get_object('kbd_2')
@@ -374,8 +341,6 @@ class App:
                            '9':'(','0':')','-':'_','=':'+',
                            '\\':'|',';':':','\'':'"',',':'<',
                            '.':'>','/':'?','[':'{',']':'}'}
-
-        # self.bar_history.connect('changed', select_bar_history_type)
 
 
         def connect_to_wifi(button):
@@ -785,8 +750,6 @@ class App:
 
         get_trip_logs()
 
-        #update_image(self.triplog_select) #fixme - do we need to call this on init?
-
         self.triplog_select.connect('changed', update_image)
 
         #setup aboutbox software version connections
@@ -814,27 +777,21 @@ class App:
         self.lbl_LON_val = self.builder.get_object("lbl_LON_val")
         self.lbl_DATE_val = self.builder.get_object("lbl_DATE_val")
         self.lbl_TIME_val = self.builder.get_object("lbl_TIME_val")
-
         self.lbl_spd_val = self.builder.get_object("lbl_spd_val")
         self.lbl_rpm_val = self.builder.get_object("lbl_rpm_val")
         self.lbl_pwr_val = self.builder.get_object("lbl_pwr_val")
-
         self.lbl_HDG_val = self.builder.get_object("lbl_HDG_val")
         self.lbl_fwd_rev_val = self.builder.get_object("lbl_fwd_rev_val")
-
         self.plotRingGaugeArea = self.builder.get_object("plotRingGaugeView")
         self.plotGaugeKeyArea = self.builder.get_object("plotGaugeKeyView")
         self.plotMotTempArea = self.builder.get_object("plotMotTempView")
         self.plotCtrlTempArea = self.builder.get_object("plotCtrlTempView")
         self.plotBattSocArea = self.builder.get_object("plotBattSocView")
-
         self.plotPwrHistAreaSec = self.builder.get_object("plotPwrHistSecView")
         self.plotPwrHistAreaMin = self.builder.get_object("plotPwrHistMinView")
         self.plotPwrHistAreaHrs = self.builder.get_object("plotPwrHistHrsView")
-
         self.txtSysLogView = self.builder.get_object("txtSysLogView")
         self.lbl_runTime_val = self.builder.get_object("lbl_runTime_val")
-
         self.chk_gps_logging = self.builder.get_object("id_gps_logging")
         self.chk_can_logging = self.builder.get_object("id_can_logging")
         self.chk_show_passwd = self.builder.get_object('id_sys_ckbox_6')
@@ -917,7 +874,6 @@ class App:
         self.plotMotTempArea.connect('draw', self.on_draw_mot_temp)
         self.plotCtrlTempArea.connect('draw', self.on_draw_mot_ctrl_temp)
         self.plotBattSocArea.connect('draw', self.on_draw_batt_soc)
-
         self.plotPwrHistAreaSec.connect('draw', self.on_draw_pwr_hist_sec)
         self.plotPwrHistAreaMin.connect('draw', self.on_draw_pwr_hist_min)
         self.plotPwrHistAreaHrs.connect('draw', self.on_draw_pwr_hist_hrs)
@@ -933,7 +889,6 @@ class App:
         with concurrent.futures.ThreadPoolExecutor() as executor:
             #executor.submit(self.applog_thread)
             if self.syslog_replay_file is None:
-                # fixme:
                 executor.submit(self.gps_reader_thread)
                 executor.submit(self.can_processing_thread, self.CANInterface)
                 executor.submit(gtk.main)
@@ -949,7 +904,6 @@ class App:
         self.stop_gps_thread = True
         self.stop_can_thread = True
         self.stop_timing_thread = True
-
         gtk.main_quit()
 
     def read_evms_cfg_settings(self):
@@ -1018,8 +972,7 @@ class App:
                     line_read = 0
                     # syslog file format is CSV, starting on line 3
                     # date,time,rpm,motor_tmp,ibat,vbat,pack_hlth,pack_cycles,lo_cell_v,hi_cell_v,pack_lo_tmp,pack_hi_tmp,pack_amp_hrs,soc,lat,lon,spd,hdg,rev,charging
-                    # filedescriptors = termios.tcgetattr(sys.stdin)
-                    # tty.setcbreak(sys.stdin)
+
                     lines = replay_file.readlines()
                     index = 0
                     line = lines[index]
@@ -1049,7 +1002,6 @@ class App:
                             from_zone = tz.tzutc()
                             to_zone = tz.tzlocal()
 
-                            # utc = datetime.utcnow()
                             utc = datetime.strptime(columns[2], '%H:%M:%S')
 
                             # Tell the datetime object that it's in UTC time zone since
@@ -1197,24 +1149,18 @@ class App:
                     # print("self.dat.runTime_100ms={:.d}".format(self.dat.runTime_100ms))
                     self.dat.pwr_10hz = np.roll(self.dat.pwr_10hz, 1)
                     self.dat.pwr_10hz[0] = self.dat.pwr
-                    
                     self.dat.rpm_10hz = np.roll(self.dat.rpm_10hz, 1)
                     self.dat.rpm_10hz[0] = self.dat.rpm
-                    
                     self.dat.spd_10hz = np.roll(self.dat.spd_10hz, 1)
                     self.dat.spd_10hz[0] = self.dat.spd
-                    
-                    
                     # print("self.dat.pwr_10hz[{:d}] = {:0.4f}".format(self.dat.runTime_100ms,self.dat.pwr_10hz[self.dat.runTime_100ms]))
 
                     self.update_runTimer()
 
                     if self.dat.OneSecTick == True:  # -------------- One Hz Tasks --------------
                         self.do_OneSecTasks()
-
                     if self.dat.OneMinTick == True:  # -------------- One Min Tasks --------------
                         self.do_OneMinTasks()
-
                     if self.dat.OneHrTick == True:  # -------------- One Hr Tasks --------------
                         self.do_OneHrTasks()
 
@@ -1483,7 +1429,6 @@ class App:
             sys_datetime = datetime.utcnow()
             sys_datetime = sys_datetime - timedelta(microseconds=sys_datetime.microsecond)
             GLib.idle_add(self.lbl_eng_sysDatetime.set_label, str(sys_datetime))
-
             #GLib.idle_add(self.lbl_eng_timezone.set_label, tzname[0] + ' ' + tzname[1])
             GLib.idle_add(self.lbl_eng_offsetFromUtc.set_label, str(-timezone / 60 / 60))
 
@@ -1500,7 +1445,6 @@ class App:
     def draw_bar_hist(self, da_pwr_hist, ctx_bar_hist, graph_var):
 
         max_y = self.dat.max_y_scale_bar_hist = 150
-
         if self.bar_history.get_active_text() == 'RPM':
             bar_max = self.max_rpm
             ctx_bar_hist.set_source_rgb(self.dat.rpm_R, self.dat.rpm_G, self.dat.rpm_B)
@@ -1560,26 +1504,19 @@ class App:
         except Exception as e:
             log("on_draw_pwr_hist_hrs ERROR: " + str(e))
 
-
-
         # --------------------------------------------------------- on_draw_gauge_key -------------------
 
     def on_draw_gauge_key(self, drawAreaGaugeKey, ctx_gauge_key):
-
         try:
             ctx_gauge_key.set_source_rgb(0.8, .8, .8)  # bar background color
             ctx_gauge_key.set_line_width(50)
-
             key_widget_height = 100
-
             ctx_gauge_key.rectangle(0, 0, 15, 15)
             ctx_gauge_key.set_source_rgb(self.dat.spd_R, self.dat.spd_G, self.dat.spd_B)
             ctx_gauge_key.fill()
-
             ctx_gauge_key.rectangle(0, 20, 15, 15)
             ctx_gauge_key.set_source_rgb(self.dat.rpm_R, self.dat.rpm_G, self.dat.rpm_B)
             ctx_gauge_key.fill()
-
             ctx_gauge_key.rectangle(0, 40, 15, 15)
             ctx_gauge_key.set_source_rgb(self.dat.pwr_R, self.dat.pwr_G, self.dat.pwr_B)
             ctx_gauge_key.fill()
@@ -1588,11 +1525,9 @@ class App:
 
     # --------------------------------------------------------- draw ctrl temp bar -------------------
     def on_draw_mot_ctrl_temp(self, drawAreaCtrlTemp, ctx_ctrlTemp):
-
         try:
             ctx_ctrlTemp.set_source_rgb(0.8, .8, .8)  # bar background color
             ctx_ctrlTemp.set_line_width(50)
-            
             gauge_width = 30
             top_right = 200  # mid-point startup condition until can data available.
             battery_widget_height = 400
@@ -1600,10 +1535,8 @@ class App:
             if self.dat.mot_ctrl_temp is not None:
                 # log("SOC = " + str(self.data_holder.soc))
                 top_right = battery_widget_height * int(self.dat.mot_ctrl_temp) / self.max_mot_ctrl_temp_scale
-
                 ctx_ctrlTemp.rectangle(0, 0, gauge_width, battery_widget_height)
                 ctx_ctrlTemp.fill()
-
                 ctx_ctrlTemp.set_source_rgb(self.dat.tmp_R, self.dat.tmp_B, self.dat.tmp_G)  # bar color
                 if self.dat.mot_ctrl_temp >= int(self.ctrlr_temp_warn_threshold):
                     ctx_ctrlTemp.set_source_rgb(255, 140, 0)
@@ -1628,7 +1561,6 @@ class App:
                     # ctx_batsoc.fill()
 
             ctx_ctrlTemp.rectangle(4, battery_widget_height - 4, gauge_width - 8, 4 - top_right)
-
             ctx_ctrlTemp.fill()
         except Exception as e:
             log("Exception - on_draw_mot_ctrl_tmp: " + str(e))
@@ -1639,7 +1571,6 @@ class App:
         try:
             ctx_motTemp.set_source_rgb(0.8, .8, .8)  # bar background color
             ctx_motTemp.set_line_width(50)
-
             gauge_width = 42
             top_right = 200  # mid-point startup condition until can data available.
             battery_widget_height = 400
@@ -1649,7 +1580,6 @@ class App:
                 top_right = battery_widget_height * int(self.dat.mot_temp) / self.max_mot_temp_scale
                 ctx_motTemp.rectangle(0, 0, 55, battery_widget_height)
                 ctx_motTemp.fill()
-
                 ctx_motTemp.set_source_rgb(self.dat.tmp_R, self.dat.tmp_B, self.dat.tmp_G)  # bar color
                 if self.dat.mot_temp >= int(self.mot_temp_warn_threshold):
                     ctx_motTemp.set_source_rgb(255, 140, 0)
@@ -1685,7 +1615,6 @@ class App:
 
             ctx_batsoc.set_source_rgb(0.8, .8, .8)  # bar background color
             ctx_batsoc.set_line_width(50)
-
             battery_widget_height = 400
             top_right = 200  # mid-point startup condition until can data available.
 
@@ -1729,13 +1658,11 @@ class App:
         radius = 275
         gaugeWidth = 1180 / 4
         line_width = radius / 6
-
         start_angle = pi * 0.7
         pwr_end_angle = start_angle
         spd_end_angle = start_angle
         rpm_end_angle = start_angle
         eff_end_angle = start_angle
-
         pegged = 0.8
 
         try:
@@ -1767,7 +1694,6 @@ class App:
             ########## gauge framework ##########
             ctx.set_source_rgb(0.1, 0.1, 0.1)
             ctx.set_line_width(1)
-
             ctx.arc(gaugeWidth,
                     radius,
                     radius * 0.4,
@@ -1777,22 +1703,18 @@ class App:
 
             ctx.set_source_rgb(0, 1, 0)  # green
             ctx.set_line_width(1)
-
             ctx.arc(gaugeWidth,
                     radius,
                     radius * 1,
                     start_angle,
                     eff_end_angle)
-
             ctx.stroke()
 
             # ctx.arc(self.x_cntr, self.y_cntr, radius=radius * 1.2, 0, 360, edgecolor='k', lw=2)
-
             ########## RING 1 : SPEED ##########
             ctx.set_source_rgb(self.dat.spd_R, self.dat.spd_G, self.dat.spd_B)
             ctx.set_line_width(line_width)
             ctx.set_tolerance(0.1)
-
             ctx.arc(gaugeWidth,
                     radius,
                     radius * 0.9,
@@ -1813,14 +1735,12 @@ class App:
 
             ctx.set_line_width(line_width)
             ctx.set_tolerance(0.1)
-
             ctx.arc(gaugeWidth,
                     radius,
                     radius * 0.7,
                     start_angle,
                     rpm_end_angle)
             ctx.stroke()
-
             # ctx.set_source_rgb(0.3, 0.4, 0.6)
             ctx.set_source_rgb(1, 1, 1)
             ctx.fill()
@@ -1829,7 +1749,6 @@ class App:
                 ctx.set_source_rgb(0, self.dat.pwr_G, 0)
                 ctx.set_line_width(line_width)
                 ctx.set_tolerance(0.1)
-
                 ctx.arc(gaugeWidth,
                         radius,
                         radius * 0.5,
@@ -1844,14 +1763,12 @@ class App:
 
                 ctx.set_line_width(line_width)
                 ctx.set_tolerance(0.1)
-
                 ctx.arc(gaugeWidth,
                         radius,
                         radius * 0.5,
                         start_angle,
                         pwr_end_angle)
             ctx.stroke()
-
             # ctx.set_source_rgb(0.3, 0.4, 0.6)
             ctx.set_source_rgb(1, 1, 1)
             ctx.fill()
