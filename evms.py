@@ -912,29 +912,93 @@ class App:
         self.stop_timing_thread = True
         gtk.main_quit()
 
+    def update_pwr_histogram(self):
+        # update file with cumulitive runtime in minutes, and cumulitive power in kW
+        histfile = '.pwr_histograms.dat'
+        bincount = 25
+        pwrhist = np.zeros(bincount)
+
+        np.set_printoptions(threshold=np.inf)
+        np.set_printoptions(linewidth=np.inf)
+
+        try:
+            file = open(histfile)
+            lines = file.readlines()
+            for line in lines:
+                line = line.rstrip()
+                line = line.replace('[ ', '')
+                line = line.replace('[', '')
+                line = line.replace(']', '')
+                line = line.replace('.', '')
+                line = line.replace('  ', ' ')
+                line = line.replace(' ', ',')
+                if line != '\n':
+                    pwrhist = np.fromstring(line, dtype=int, sep=',')
+
+            #print(pwrhist)
+            pwrhistogram, bin_edges = np.histogram([self.dat.pwr_min[0] * self.max_pwr/25+.5], range(0, bincount+1))
+            #print(pwrhistogram)
+            pwrhistogram = pwrhist + pwrhistogram
+            #print(pwrhistogram)
+            f = open(histfile, 'w')
+            #f.writelines(str('#RPM historgram, 25 bins, 0-1500\n'))
+            f.writelines(str(pwrhistogram) + '\n')
+        except Exception as e:
+            log("update_pwr_histogram error: " + str(e))
+
+    def update_rpm_histogram(self):
+        # update file with cumulitive runtime in minutes, and cumulitive power in kW
+        histfile = '.rpm_histograms.dat'
+        bincount = 25
+        rpmhist = np.zeros(bincount)
+
+        np.set_printoptions(threshold=np.inf)
+        np.set_printoptions(linewidth=np.inf)
+
+        try:
+            file = open(histfile)
+            lines = file.readlines()
+            for line in lines:
+                line = line.rstrip()
+                line = line.replace('[ ', '')
+                line = line.replace('[', '')
+                line = line.replace(']', '')
+                line = line.replace('.', '')
+                line = line.replace('  ', ' ')
+                line = line.replace(' ', ',')
+                if line != '\n':
+                    rpmhist = np.fromstring(line, dtype=int, sep=',')
+
+            #print(rpmhist)
+            rpmhistogram, bin_edges = np.histogram([self.dat.rpm_min[0] / 75], range(0, bincount+1))
+            #print(rpmhistogram)
+            rpmhistogram = rpmhist + rpmhistogram
+            #print(rpmhistogram)
+            f = open(histfile, 'w')
+            #f.writelines(str('#RPM historgram, 25 bins, 0-1500\n'))
+            f.writelines(str(rpmhistogram) + '\n')
+        except Exception as e:
+            log("update_rpm_histogram error: " + str(e))
+
     def increment_odemeter(self):
         # update file with cumulitive runtime in minutes, and cumulitive power in kW
-        odometerfile = 'odometer.dat'
+        odometerfile = '.odometer.dat'
         runtime_mins = 0.0
-        cumpower = 0.0
         try:
             file = open(odometerfile)
             lines = file.readlines()
-            print(lines)
+            #print(lines)
             for line in lines:
                 if line != '\n':
                     line = line.rstrip()
                     line = line.replace(' ', '')
                     line = line.split(',')
                     if line[0] == 'odometer':
-                        runtime_mins = float(line[1]) + 1.0
-                        cumpower     = float(line[2]) + float(self.dat.pwr_min[0])
-                    else:
-                        log('error reading system.dat')
+                        runtime_mins = int(line[1]) + 1 # add a minute to the total runtime counter
         except Exception as e:
             log("increment_odemeter read: " + str(e))
         try:
-            open(odometerfile, 'w+').writelines('odometer, ' + str(runtime_mins) + ', ' + str(cumpower) + '\n')
+            open(odometerfile, 'w+').writelines('odometer, ' + str(int(runtime_mins)) + '\n')
         except Exception as e:
             log("increment_odemeter write: " + str(e))
 
@@ -994,7 +1058,7 @@ class App:
 
     def tenHz_timer_thread(self):
 
-        log("starting timer thread")
+        log("starting Timer thread")
         self.dat.runTime_100ms = 0
 
         if self.replaying_logfile == True:  # process new data from logfile
@@ -1267,6 +1331,7 @@ class App:
             #log("OneMinTick")
             self.dat.pwr_min = np.roll(self.dat.pwr_min, 1)
             self.dat.pwr_min[0] = np.average(self.dat.pwr_sec)
+            self.dat.pwr_min_sum = np.sum(self.dat.pwr_sec) #total power used in the last minute (in kW)
 
             self.dat.rpm_min = np.roll(self.dat.rpm_min, 1)
             self.dat.rpm_min[0] = np.average(self.dat.rpm_sec)
@@ -1275,6 +1340,9 @@ class App:
             self.dat.spd_min[0] = np.average(self.dat.spd_sec)
             #!@#
             self.increment_odemeter()
+            self.update_rpm_histogram()
+            self.update_pwr_histogram()
+
             # log("pwr_min = {:04.2f}".format(float(self.dat.pwr_sec[self.dat.runTime_sec])) +
             #     ", rpm_min = {:04.0f}".format(float(self.dat.rpm_sec[self.dat.runTime_sec])) +
             #     ", spd_min = {:04.1f}".format(float(self.dat.spd_sec[self.dat.runTime_sec])))
@@ -1738,14 +1806,14 @@ class App:
             ctx.stroke()
 
             # small experimental efficency ring
-            ctx.set_source_rgb(0, 1, 0)  # green
-            ctx.set_line_width(1)
-            ctx.arc(gaugeWidth,
-                    radius,
-                    radius * 1,
-                    start_angle,
-                    eff_end_angle)
-            ctx.stroke()
+            # ctx.set_source_rgb(0, 1, 0)  # green
+            # ctx.set_line_width(1)
+            # ctx.arc(gaugeWidth,
+            #         radius,
+            #         radius * 1,
+            #         start_angle,
+            #         eff_end_angle)
+            # ctx.stroke()
 
             # ctx.arc(self.x_cntr, self.y_cntr, radius=radius * 1.2, 0, 360, edgecolor='k', lw=2)
             ########## RING 1 : SPEED ##########
@@ -1842,7 +1910,7 @@ class App:
     def print_can_column_headers(self):
 
         header_string = str('\n\n*************** Newport Electric Boats, LLC ***************'
-                        + '\nEVMS software version ' + self.sw_ver_evms + ')\n\n')
+                        + '\nEVMS version ' + self.sw_ver_evms + ')\n\n')
 
         header_string = header_string + str('CAN bus columns are defined as:\n' +
                         'A_HEADER,date,time,lat,lon,spd,hdg,rpm,soc,ibat,vbat,motor_tmp,mot_ctrl_temp,' +

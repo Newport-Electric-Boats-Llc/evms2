@@ -147,6 +147,7 @@ class DataHolder:
         self.pwr_10hz = np.zeros(10)
         self.pwr_sec = np.zeros(60)
         self.pwr_min = np.zeros(60)
+        self.pwr_min_sum = 0
         self.pwr_hrs = np.zeros(60)
         self.rpm_10hz = np.zeros(10)
         self.rpm_sec = np.zeros(60)
