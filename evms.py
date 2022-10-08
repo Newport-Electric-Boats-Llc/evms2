@@ -14,6 +14,7 @@ import logging
 import remote
 import glob
 import csv
+import importlib
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk as gtk
@@ -50,11 +51,12 @@ def log(message):
 
 class App:
     def __init__(self):
-        self.sw_ver_evms = "1.1.1"
+        self.sw_ver_evms = "1.1.2"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
         self.GPSLog = None
+        self.debug_wo_gps = True #<--- FIXME SHOULD BE FALSE ****************
         self.app_logging_enabled = True  # ALWAYS TRUE
         self.sys_logging_enabled = True
         self.can_tx_msgs = False
@@ -65,6 +67,12 @@ class App:
         self.mapPlots = mapPlots('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
         self.evms_can = evms_can('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
         self.evms_about_top_text = 'The EVMS system is for display and monitoring the electric propulsion system status. Motor control is not affected by the EMVS setings.'
+
+        if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
+            import pyi_splash
+            pyi_splash.update_text('UI Loaded ...')
+            pyi_splash.close()
+            log.info('Splash screen closed.')
 
         try:
             self.init_AppLog()
@@ -133,7 +141,7 @@ class App:
 
             # uncomment the following line to make window frameless (unable to kill via titlebar)
             #self.window.set_decorated(False)
-            self.window.set_decorated(False)
+            self.window.set_decorated(True)
 
             # ---------------------- application variables ---
             self.plot_power_history = True
@@ -895,7 +903,10 @@ class App:
         with concurrent.futures.ThreadPoolExecutor() as executor:
             #executor.submit(self.applog_thread)
             if self.syslog_replay_file is None:
-                executor.submit(self.gps_reader_thread)
+                if self.debug_wo_gps == True:
+                    pass
+                else:
+                    executor.submit(self.gps_reader_thread)
                 executor.submit(self.can_processing_thread, self.CANInterface)
                 executor.submit(gtk.main)
                 executor.submit(self.tenHz_timer_thread)
