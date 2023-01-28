@@ -9,7 +9,7 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[],
-    hiddenimports=['matplotlib', 'python-gi-cairo'],
+    hiddenimports=['matplotlib', 'gi._gi_cairo'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -21,7 +21,7 @@ a = Analysis(
 )
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 splash = Splash(
-    'neb-splash2.png',
+    'neb-splash.png',
     binaries=a.binaries,
     datas=a.datas,
     text_pos=None,
