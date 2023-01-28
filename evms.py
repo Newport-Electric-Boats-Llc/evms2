@@ -18,6 +18,8 @@ import importlib
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk as gtk
+from gi.repository import Gdk as gdk
+import cairo
 from gi.repository import GLib
 
 from dateutil import tz
@@ -51,12 +53,12 @@ def log(message):
 
 class App:
     def __init__(self):
-        self.sw_ver_evms = "1.1.2"
+        self.sw_ver_evms = "1.1.6"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
         self.GPSLog = None
-        self.debug_wo_gps = True #<--- FIXME SHOULD BE FALSE ****************
+        self.debug_wo_gps = False #<--- SHOULD BE FALSE unless debugging ****************
         self.app_logging_enabled = True  # ALWAYS TRUE
         self.sys_logging_enabled = True
         self.can_tx_msgs = False
@@ -71,8 +73,9 @@ class App:
         if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
             import pyi_splash
             pyi_splash.update_text('UI Loaded ...')
+            sleep(1)
             pyi_splash.close()
-            log.info('Splash screen closed.')
+            log('Splash screen closed. Starting App')
 
         try:
             self.init_AppLog()
@@ -96,7 +99,7 @@ class App:
         try:
             self.gpsPort = None
             self.gps_baudrate = 9600  # Default baud rate
-            self.gps_ports = ["/dev/ttyUSB0", "/dev/ttyACM0", "/dev/ttyUSB1", "/dev/ttyACM1"]
+            self.gps_ports = ["/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyUSB2", "/dev/ttyACM0", "/dev/ttyACM1"]
             self.gps_from_file = False
             if sys.argv[2] != 'usb':
                 self.gps_ports = [sys.argv[2]]# Default port name
@@ -109,19 +112,21 @@ class App:
             self.init_gps_serial()
             self.init_can_interface()
 
-        except Exception as e:
-            log('Exception __init__ part 2: ' + str(e))
-        try:
             self.a_data = ''
             self.b_data = ''
             self.c_data = ''
+
+        except Exception as e:
+            log('Exception __init__ part 2: ' + str(e))
+        try:
+
             self.builder = gtk.Builder()
             # if self.display_size == '1280x720':
             #self.builder.add_from_file("evms_1280x720.glade")
             self.builder.add_from_file("evms_1280x800.glade")
 
         except Exception as e:
-            log('Exception __init__ part 3: ' + str(e))
+            log('Exception __init__ gtk.Builder() : ' + str(e))
 
         try:
             self.dat.max_y_scale_bar_hist = 220 #150  # widow height is 220+80
@@ -139,9 +144,7 @@ class App:
             self.wifi_combobox = self.builder.get_object('id_wifi_combobox')
             self.wifi_password_box = self.builder.get_object('id_wifi_password')
 
-            # uncomment the following line to make window frameless (unable to kill via titlebar)
-            #self.window.set_decorated(False)
-            self.window.set_decorated(True)
+            self.window.set_decorated(False)
 
             # ---------------------- application variables ---
             self.plot_power_history = True
