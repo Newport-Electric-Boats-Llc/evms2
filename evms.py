@@ -59,7 +59,7 @@ def log(message):
 
 class App:
     def __init__(self):
-        self.sw_ver_evms = "1.1.7"
+        self.sw_ver_evms = "1.1.8"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
