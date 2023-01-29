@@ -38,6 +38,12 @@ import subprocess
 import pynmea2
 from math import pi
 
+# -- JDB BMS includes
+import bmstools.jbd
+import json
+
+
+
 log_window_buffer = ''
 appStartDateString = datetime.now().strftime("%Y-%m-%d")
 appStartTimeString = datetime.now().strftime("%H:%M:%S")
@@ -53,7 +59,7 @@ def log(message):
 
 class App:
     def __init__(self):
-        self.sw_ver_evms = "1.1.6"
+        self.sw_ver_evms = "1.1.7"
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
