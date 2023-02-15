@@ -66,12 +66,12 @@ def log(message):
 
 class App:
     def __init__(self):
-        self.sw_ver_evms = "1.1.7"
+        self.sw_ver_evms = "1.2.0"
 
         jbd_ser = serial.Serial('/dev/ttyUSB0')
         self.j = bmstools.jbd.JBD(jbd_ser)
         self.j.debug = True
-
+        self.jbd_read_state = 0
 
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
@@ -264,6 +264,8 @@ class App:
             self.triplog_select.set_active(1)
 
         def on_switch_tab(notebook, tab, index):
+            if index > 5:
+                return True
             try:
                 tab_list = ['Instruments', 'CAN Data', 'TripLog', 'System', 'JBD_Battery', 'About']
                 log('Selected ' + tab_list[index] + ' Tab')
@@ -1345,6 +1347,7 @@ class App:
                 executor.submit(self.can_processing_thread, self.CANInterface)
                 executor.submit(gtk.main)
                 executor.submit(self.tenHz_timer_thread)
+                executor.submit(self.jbd_bms_monitor_thread)
             else:
                 try:
                     executor.submit(gtk.main)
@@ -1502,29 +1505,28 @@ class App:
     # ---------------------------------------------------------------------------------------------------------------
     def jbd_status(self):
 
-        print("\n\nBasic Info:")  # ======================================================================
-        basicInfo = self.j.readBasicInfo()
-        # print(json.dumps(basicInfo, indent = 2))
+        if self.jbd_read_state == 0:
+            print("\n\nreading Basic Info:")  # ======================================================================
+            basicInfo = self.j.readBasicInfo()
+            # print(json.dumps(basicInfo, indent = 2))
 
-        if(0):
-            for name, value in basicInfo.items():
-                try:
-                        match name:
-                            case 'cur_cap':
-                                print(name, f'{value:7.3f}')
-                            case 'full_cap':
-                                print(name, f'{value:7.3f}')
-                            case 'bal16' | 'bal17' | 'bal18' | 'bal19' | 'bal20' | 'bal21' | 'bal22' | 'bal23' | 'bal24' | 'bal25' | 'bal26' | 'bal27' | 'bal28' | 'bal29' | 'bal30' | 'bal31':
-                                pass  # print("skipping " + name)
-                            case 'ntc3' | 'ntc4' | 'ntc5' | 'ntc6' | 'ntc7':
-                                pass  # print("skipping " + name)
-                            case other:
-                                print(name, value)
-                except Exception as e:
-                    print(e)
-        else:                       #!@#
-
-            if self.dat.runTime_sec % 5 == 0:
+            if(0):
+                for name, value in basicInfo.items():
+                    try:
+                            match name:
+                                case 'cur_cap':
+                                    print(name, f'{value:7.3f}')
+                                case 'full_cap':
+                                    print(name, f'{value:7.3f}')
+                                case 'bal16' | 'bal17' | 'bal18' | 'bal19' | 'bal20' | 'bal21' | 'bal22' | 'bal23' | 'bal24' | 'bal25' | 'bal26' | 'bal27' | 'bal28' | 'bal29' | 'bal30' | 'bal31':
+                                    pass  # print("skipping " + name)
+                                case 'ntc3' | 'ntc4' | 'ntc5' | 'ntc6' | 'ntc7':
+                                    pass  # print("skipping " + name)
+                                case other:
+                                    print(name, value)
+                    except Exception as e:
+                        print(e)
+            else:
                 self.jbd_basicInfo_v1.set_label(f'{basicInfo["pack_mv"]/1000:7.3f}')
                 self.jbd_basicInfo_v2.set_label(f'{basicInfo["pack_ma"]/1000:7.3f}')
                 self.jbd_basicInfo_v3.set_label(f'{basicInfo["cur_cap"]/1000:7.3f}')
@@ -1550,20 +1552,18 @@ class App:
                 self.jbd_basicInfo_v23.set_label('{x}'.format(x=basicInfo['bal14']))
                 self.jbd_basicInfo_v24.set_label('{x}'.format(x=basicInfo['bal15']))
 
-
-
-        print("\n\nCell Info:")  # ======================================================================
-        cellInfo = self.j.readCellInfo()
-        # print(json.dumps(cellInfo, indent = 2))
-        if(0):
-            for name, value in cellInfo.items():
-                try:
-                    value = value / 1000
-                    print(name, f'{value:7.3f}')
-                except Exception as e:
-                    print(e)
-        else:
-            if self.dat.runTime_sec % 3 == 0:
+        if self.jbd_read_state == 1:
+            print("\n\nreading Cell Info:")  # ======================================================================
+            cellInfo = self.j.readCellInfo()
+            # print(json.dumps(cellInfo, indent = 2))
+            if(0):
+                for name, value in cellInfo.items():
+                    try:
+                        value = value / 1000
+                        print(name, f'{value:7.3f}')
+                    except Exception as e:
+                        print(e)
+            else:
                 self.jbd_cell_volts_v0.set_label(f'{cellInfo["cell0_mv"]/1000:7.3f}')
                 self.jbd_cell_volts_v1.set_label(f'{cellInfo["cell1_mv"]/1000:7.3f}')
                 self.jbd_cell_volts_v2.set_label(f'{cellInfo["cell2_mv"]/1000:7.3f}')
@@ -1582,32 +1582,26 @@ class App:
                 self.jbd_cell_volts_v15.set_label(f'{cellInfo["cell15_mv"]/1000:7.3f}')
 
 
-        # print("\n\nDevice Info:")  # ======================================================================
-        # deviceInfo = self.j.readDeviceInfo()
-        # # print(json.dumps(deviceInfo, indent = 2))
-        #
-        # for name, value in deviceInfo.items():
-        #     try:
-        #         match name:
-        #             case 'cur_cap':
-        #                 print(name, f'{value:7.3f}')
-        #             case other:
-        #                 print(name, value)
-        #
-        #     except Exception as e:
-        #         print(e)
+            # print("\n\nDevice Info:")  # ======================================================================
+            # deviceInfo = self.j.readDeviceInfo()
+            # # print(json.dumps(deviceInfo, indent = 2))
+            #
+            # for name, value in deviceInfo.items():
+            #     try:
+            #         match name:
+            #             case 'cur_cap':
+            #                 print(name, f'{value:7.3f}')
+            #             case other:
+            #                 print(name, value)
+            #
+            #     except Exception as e:
+            #         print(e)
 
-        if self.dat.runTime_sec % 7 == 0:
-            print("\n\nEEPROM Info:")  # ======================================================================
+        if self.jbd_read_state == 2:
+            print("\n\nreading EEPROM Info:")  # ======================================================================
             eepromInfo = self.j.readEeprom()
             #for name, value in eepromInfo.items():
             try:
-
-                self.jbd_eeprom_v1.set_label(str(eepromInfo["covp"]))
-                print(str(eepromInfo["covp"]))
-                print(f'{eepromInfo["covp"]/100:7.3f}')
-
-
                 self.jbd_eeprom_v1.set_label(f'{eepromInfo["covp"]/1000:7.3f}')
                 self.jbd_eeprom_v2.set_label(f'{eepromInfo["covp_rel"]/100:7.3f}')
                 self.jbd_eeprom_v3.set_label(f'{eepromInfo["cuvp"]/1000:7.3f}')
@@ -1652,11 +1646,11 @@ class App:
                 self.jbd_eeprom_v41.set_label(f'{eepromInfo["switch"]}')
                 self.jbd_eeprom_v42.set_label(f'{eepromInfo["scrl"]}')
 
-                print("DEBUGGING\n") #!@#
-                print(str(eepromInfo["scrl"]))
-                print(str(eepromInfo["balance_en"]))
-                print(str(eepromInfo["chg_balance_en"]))
-                print(str(eepromInfo["led_en"]))
+                # print("DEBUGGING\n") #!@#
+                # print(str(eepromInfo["scrl"]))
+                # print(str(eepromInfo["balance_en"]))
+                # print(str(eepromInfo["chg_balance_en"]))
+                # print(str(eepromInfo["led_en"]))
 
                 self.jbd_eeprom_v43.set_label(f'{eepromInfo["balance_en"]}')
                 self.jbd_eeprom_v44.set_label(f'{eepromInfo["chg_balance_en"]}')
@@ -1736,7 +1730,22 @@ class App:
         #     print(e)
 
     # ---------------------------------------------------------------------------------------------------------------
+    def jbd_bms_monitor_thread(self):
 
+        log("starting jbd_bms_monitor_thread")
+
+        while(True):
+            try:
+                self.jbd_status()
+            except Exception as e:
+                log("ERROR: do_OneSecTask: jbd_status - " + str(e))
+            sleep(2)
+            #update the read state for the next read cycle
+            self.jbd_read_state = self.jbd_read_state + 1
+            if self.jbd_read_state > 2:
+                self.jbd_read_state = 0
+
+            print("jbd_read_state = " + str(self.jbd_read_state))
 
     # ----------------------------- timing_thread -----------------------------
 
@@ -2005,11 +2014,6 @@ class App:
         # position = self.scroll_window.get_vadjustment()
         # position.set_value(position.get_upper())
         # self.scroll_window.set_vadjustment(position)
-
-        try:
-            self.jbd_status()
-        except Exception as e:
-            log("ERROR: do_OneSecTask: jbd_status - " + str(e))
 
 
 

@@ -6247,7 +6247,7 @@ PWR (kW)</property>
                 </child>
               </object>
               <packing>
-                <property name="x">800</property>
+                <property name="x">1000</property>
                 <property name="y">20</property>
               </packing>
             </child>
