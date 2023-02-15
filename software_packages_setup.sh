@@ -32,6 +32,10 @@ sudo apt install -y lightdm
 #sudo apt install python-pil.imagetk
 sudo apt remove update-notifier update-notifier-common
 
+#setup access to the /dev/tty* ports
+sudo usermod -a -G dialout neb
+
+
 sudo mv /etc/xdg/autostart/upg-notifier-autostart.desktop /etc/xdg/autostart/upg-notifier-autostart.desktop_disabled
 
 echo "Touchscreen driver available at: https://www.eeti.com/drivers_Linux.html"
