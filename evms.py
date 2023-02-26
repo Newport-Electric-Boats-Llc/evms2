@@ -66,7 +66,7 @@ def log(message):
 
 class App:
     def __init__(self):
-        self.sw_ver_evms = "1.2.0"
+        self.sw_ver_evms = "1.2.1"
 
         jbd_ser = serial.Serial('/dev/ttyUSB0')
         self.j = bmstools.jbd.JBD(jbd_ser)
@@ -82,9 +82,18 @@ class App:
         self.sys_logging_enabled = True
         self.can_tx_msgs = False
         self.lfp_banks = 1
+        self.pack_1_capacity = 10000
+        self.pack_2_capacity = 15000 #defualt value
         self.select_lfp_bank_2 = False
         self.config_info = self.read_evms_cfg_settings()
         self.dat = DataHolder()#'logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
+
+        # - initialze variables used for pack 2 (JBD BMS) so they are available for calculations...
+        self.dat.pack2_volts    = 0
+        self.dat.pack2_amps     = 0
+        self.dat.pack2_soc      = 0
+        self.dat.pack2_full_cap = 0
+
         self.mapPlots = mapPlots('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
         self.evms_can = evms_can('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
         self.evms_about_top_text = 'The EVMS system is for display and monitoring the electric propulsion system status. Motor control is not affected by the EMVS setings.'
@@ -1499,6 +1508,10 @@ class App:
                         self.gps_logging_enabled = False
                 elif line[0] == 'lfp_banks':
                     self.lfp_banks == float(line[1])
+                elif line[0] == 'pack_1_capacity':
+                    self.pack_1_capacity == float(line[1])
+                elif line[0] == 'pack_2_capacity':
+                    self.pack_2_capacity == float(line[1])
 
         return lines[13:]
 
@@ -1506,7 +1519,7 @@ class App:
     def jbd_status(self):
 
         if self.jbd_read_state == 0:
-            print("\n\nreading Basic Info:")  # ======================================================================
+            #print("\n\nreading Basic Info:")  # ======================================================================
             basicInfo = self.j.readBasicInfo()
             # print(json.dumps(basicInfo, indent = 2))
 
@@ -1527,6 +1540,13 @@ class App:
                     except Exception as e:
                         print(e)
             else:
+                #get variables for SOC bar graph, etc..
+                self.dat.pack2_volts = basicInfo["pack_mv"] / 1000
+                self.dat.pack2_amps  = basicInfo["pack_ma"] / 1000
+                self.dat.pack2_soc   = basicInfo["cur_cap"] / 1000
+                self.dat.pack2_full_cap = basicInfo["full_cap"] / 1000
+
+                # load lables on JBD Battery Tab
                 self.jbd_basicInfo_v1.set_label(f'{basicInfo["pack_mv"]/1000:7.3f}')
                 self.jbd_basicInfo_v2.set_label(f'{basicInfo["pack_ma"]/1000:7.3f}')
                 self.jbd_basicInfo_v3.set_label(f'{basicInfo["cur_cap"]/1000:7.3f}')
@@ -1553,7 +1573,7 @@ class App:
                 self.jbd_basicInfo_v24.set_label('{x}'.format(x=basicInfo['bal15']))
 
         if self.jbd_read_state == 1:
-            print("\n\nreading Cell Info:")  # ======================================================================
+            #print("\n\nreading Cell Info:")  # ======================================================================
             cellInfo = self.j.readCellInfo()
             # print(json.dumps(cellInfo, indent = 2))
             if(0):
@@ -1598,7 +1618,7 @@ class App:
             #         print(e)
 
         if self.jbd_read_state == 2:
-            print("\n\nreading EEPROM Info:")  # ======================================================================
+            #print("\n\nreading EEPROM Info:")  # ======================================================================
             eepromInfo = self.j.readEeprom()
             #for name, value in eepromInfo.items():
             try:
@@ -1745,7 +1765,7 @@ class App:
             if self.jbd_read_state > 2:
                 self.jbd_read_state = 0
 
-            print("jbd_read_state = " + str(self.jbd_read_state))
+            #print("jbd_read_state = " + str(self.jbd_read_state))
 
     # ----------------------------- timing_thread -----------------------------
 
@@ -2413,11 +2433,23 @@ class App:
             ctx_batsoc.set_source_rgb(0.8, .8, .8)  # bar background color
             ctx_batsoc.set_line_width(50)
             battery_widget_height = 400
-            top_right = 200  # mid-point startup condition until can data available.
+            bar_height_1 = 100  # mid-point startup condition until can data available.
+            bar_height_2 = 100
 
             if self.dat.soc is not None:
                 # log("SOC = " + str(self.data_holder.soc))
-                top_right = (battery_widget_height - 4) * int(self.dat.soc) / 100
+
+                pack1_capacity = 10000
+                pack2_capacity = self.dat.pack2_full_cap * 3.55*16 #total energy in watts
+                #print(pack2_capacity)
+
+
+                total_bat_capacity = pack1_capacity + pack2_capacity
+
+                #DEBUG !@#
+                # self.dat.soc = 100
+                # self.dat.pack2_soc = 100
+
                 ctx_batsoc.rectangle(0, 0, 112, battery_widget_height)
                 ctx_batsoc.fill()
                 ctx_batsoc.set_source_rgb(self.dat.bat_R, self.dat.bat_G, self.dat.bat_B)
@@ -2444,7 +2476,41 @@ class App:
                     ctx_batsoc.stroke()  # bar color
                     #ctx_batsoc.fill()
 
-            ctx_batsoc.rectangle(4, battery_widget_height - 4, 104, 4 - top_right)
+            bar_height_1 = (battery_widget_height-4) * int(self.dat.soc) / 100 * (pack1_capacity / total_bat_capacity)
+            ctx_batsoc.rectangle(4, battery_widget_height-4, 104, -1*bar_height_1)
+            ctx_batsoc.fill()
+            # rectanle (x0,y0, x_span, y_span)
+            # +x right, +y is down
+            # ctx_batsoc.rectangle(10,10,50,50)
+            # ctx_batsoc.rectangle(60,60,10,10)
+
+            #update bar color for pack2 fill
+            ctx_batsoc.set_source_rgb(self.dat.bat_R+.2, self.dat.bat_G+.2, self.dat.bat_B-.1)
+
+            if self.dat.soc <= int(self.batt_warn_threshold):
+                ctx_batsoc.set_source_rgb(255, 140, 50)
+                if self.dat.soc <= int(self.batt_crit_threshold):
+                    ctx_batsoc.set_source_rgb(255, 0, 50)
+                ctx_batsoc.set_line_width(6)  # bar color
+                ctx_batsoc.move_to(0, 0)
+                ctx_batsoc.line_to(112, 0)
+                ctx_batsoc.stroke()
+                ctx_batsoc.set_line_width(6)  # bar color
+                ctx_batsoc.move_to(0, battery_widget_height)
+                ctx_batsoc.line_to(112, battery_widget_height)
+                ctx_batsoc.set_line_width(6)  # bar color
+                ctx_batsoc.stroke()
+                ctx_batsoc.move_to(0, 0)
+                ctx_batsoc.line_to(0, battery_widget_height)
+                ctx_batsoc.stroke()
+                ctx_batsoc.set_line_width(6)  # bar color
+                ctx_batsoc.move_to(112, 0)
+                ctx_batsoc.line_to(112, battery_widget_height)
+                ctx_batsoc.stroke()  # bar color
+                # ctx_batsoc.fill()
+
+            bar_height_2 = (battery_widget_height-4-1) * int(self.dat.pack2_soc) / 100 * (pack2_capacity / total_bat_capacity)
+            ctx_batsoc.rectangle(4, battery_widget_height-4-1-bar_height_1, 104, -1*bar_height_2)
             ctx_batsoc.fill()
         except Exception as e:
             log("Error - on_draw_batt_soc: " + str(e))
