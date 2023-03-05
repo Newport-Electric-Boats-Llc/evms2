@@ -66,7 +66,7 @@ def log(message):
 
 class App:
     def __init__(self):
-        self.sw_ver_evms = "1.2.1"
+        self.sw_ver_evms = "1.2.2"
 
         jbd_ser = serial.Serial('/dev/ttyUSB0')
         self.j = bmstools.jbd.JBD(jbd_ser)
@@ -93,6 +93,8 @@ class App:
         self.dat.pack2_amps     = 0
         self.dat.pack2_soc      = 0
         self.dat.pack2_full_cap = 0
+        self.dat.jbd_cell_mv[0] = 0
+        self.dat.jbd_bal[0]     = 0
 
         self.mapPlots = mapPlots('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
         self.evms_can = evms_can('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
@@ -442,6 +444,8 @@ class App:
         self.jbd_basicInfo_v22 = self.builder.get_object("lab_bi_v22")
         self.jbd_basicInfo_v23 = self.builder.get_object("lab_bi_v23")
         self.jbd_basicInfo_v24 = self.builder.get_object("lab_bi_v24")
+
+        self.plotJBDcells = self.builder.get_object("plotJBDcells")
 
         self.jbd_basicInfo1.set_label('Pack Volts:')  # basicInfo['dev_name'])
         self.jbd_basicInfo2.set_label('Pack Current:')
@@ -1337,6 +1341,9 @@ class App:
         self.plotPwrHistAreaSec.connect('draw', self.on_draw_pwr_hist_sec)
         self.plotPwrHistAreaMin.connect('draw', self.on_draw_pwr_hist_min)
         self.plotPwrHistAreaHrs.connect('draw', self.on_draw_pwr_hist_hrs)
+        self.plotJBDcells.connect('draw', self.on_draw_jbd_cells)
+
+
 
         self.window.show_all()
         #self.keyboard.hide()
@@ -1523,83 +1530,89 @@ class App:
             basicInfo = self.j.readBasicInfo()
             # print(json.dumps(basicInfo, indent = 2))
 
-            if(0):
-                for name, value in basicInfo.items():
-                    try:
-                            match name:
-                                case 'cur_cap':
-                                    print(name, f'{value:7.3f}')
-                                case 'full_cap':
-                                    print(name, f'{value:7.3f}')
-                                case 'bal16' | 'bal17' | 'bal18' | 'bal19' | 'bal20' | 'bal21' | 'bal22' | 'bal23' | 'bal24' | 'bal25' | 'bal26' | 'bal27' | 'bal28' | 'bal29' | 'bal30' | 'bal31':
-                                    pass  # print("skipping " + name)
-                                case 'ntc3' | 'ntc4' | 'ntc5' | 'ntc6' | 'ntc7':
-                                    pass  # print("skipping " + name)
-                                case other:
-                                    print(name, value)
-                    except Exception as e:
-                        print(e)
-            else:
-                #get variables for SOC bar graph, etc..
-                self.dat.pack2_volts = basicInfo["pack_mv"] / 1000
-                self.dat.pack2_amps  = basicInfo["pack_ma"] / 1000
-                self.dat.pack2_soc   = basicInfo["cur_cap"] / 1000
-                self.dat.pack2_full_cap = basicInfo["full_cap"] / 1000
+            # if False:
+            #     for name, value in basicInfo.items():
+            #         try:
+            #             match name:
+            #                 case 'cur_cap':
+            #                     print(name, f'{value:7.3f}')
+            #                 case 'full_cap':
+            #                     print(name, f'{value:7.3f}')
+            #                 case 'bal16' | 'bal17' | 'bal18' | 'bal19' | 'bal20' | 'bal21' | 'bal22' | 'bal23' | 'bal24' | 'bal25' | 'bal26' | 'bal27' | 'bal28' | 'bal29' | 'bal30' | 'bal31':
+            #                     pass  # print("skipping " + name)
+            #                 case 'ntc3' | 'ntc4' | 'ntc5' | 'ntc6' | 'ntc7':
+            #                     pass  # print("skipping " + name)
+            #                 case other:
+            #                     print(name, value)
+            #         except Exception as e:
+            #             print(e)
+            # else:
+            #get variables for SOC bar graph, etc..
+            self.dat.pack2_volts = basicInfo["pack_mv"] / 1000
+            self.dat.pack2_amps  = basicInfo["pack_ma"] / 1000
+            self.dat.pack2_soc   = basicInfo["cur_cap"] / 1000
+            self.dat.pack2_full_cap = basicInfo["full_cap"] / 1000
 
-                # load lables on JBD Battery Tab
-                self.jbd_basicInfo_v1.set_label(f'{basicInfo["pack_mv"]/1000:7.3f}')
-                self.jbd_basicInfo_v2.set_label(f'{basicInfo["pack_ma"]/1000:7.3f}')
-                self.jbd_basicInfo_v3.set_label(f'{basicInfo["cur_cap"]/1000:7.3f}')
-                self.jbd_basicInfo_v4.set_label(f'{basicInfo["full_cap"]/1000:7.3f}')
-                self.jbd_basicInfo_v5.set_label('{x}'.format(x=basicInfo['cycle_cnt']))
-                self.jbd_basicInfo_v6.set_label('{x}'.format(x=basicInfo['year']))
-                self.jbd_basicInfo_v7.set_label('{x}'.format(x=basicInfo['month']))
-                self.jbd_basicInfo_v8.set_label('{x}'.format(x=basicInfo['day']))
-                self.jbd_basicInfo_v9.set_label('{x}'.format(x=basicInfo['bal0']))
-                self.jbd_basicInfo_v10.set_label('{x}'.format(x=basicInfo['bal1']))
-                self.jbd_basicInfo_v11.set_label('{x}'.format(x=basicInfo['bal2']))
-                self.jbd_basicInfo_v12.set_label('{x}'.format(x=basicInfo['bal3']))
-                self.jbd_basicInfo_v13.set_label('{x}'.format(x=basicInfo['bal4']))
-                self.jbd_basicInfo_v14.set_label('{x}'.format(x=basicInfo['bal5']))
-                self.jbd_basicInfo_v15.set_label('{x}'.format(x=basicInfo['bal6']))
-                self.jbd_basicInfo_v16.set_label('{x}'.format(x=basicInfo['bal7']))
-                self.jbd_basicInfo_v17.set_label('{x}'.format(x=basicInfo['bal8']))
-                self.jbd_basicInfo_v18.set_label('{x}'.format(x=basicInfo['bal9']))
-                self.jbd_basicInfo_v19.set_label('{x}'.format(x=basicInfo['bal10']))
-                self.jbd_basicInfo_v20.set_label('{x}'.format(x=basicInfo['bal11']))
-                self.jbd_basicInfo_v21.set_label('{x}'.format(x=basicInfo['bal12']))
-                self.jbd_basicInfo_v22.set_label('{x}'.format(x=basicInfo['bal13']))
-                self.jbd_basicInfo_v23.set_label('{x}'.format(x=basicInfo['bal14']))
-                self.jbd_basicInfo_v24.set_label('{x}'.format(x=basicInfo['bal15']))
+            # load lables on JBD Battery Tab
+            self.jbd_basicInfo_v1.set_label(f'{basicInfo["pack_mv"]/1000:7.3f}')
+            self.jbd_basicInfo_v2.set_label(f'{basicInfo["pack_ma"]/1000:7.3f}')
+            self.jbd_basicInfo_v3.set_label(f'{basicInfo["cur_cap"]/1000:7.3f}')
+            self.jbd_basicInfo_v4.set_label(f'{basicInfo["full_cap"]/1000:7.3f}')
+            self.jbd_basicInfo_v5.set_label('{x}'.format(x=basicInfo['cycle_cnt']))
+            self.jbd_basicInfo_v6.set_label('{x}'.format(x=basicInfo['year']))
+            self.jbd_basicInfo_v7.set_label('{x}'.format(x=basicInfo['month']))
+            self.jbd_basicInfo_v8.set_label('{x}'.format(x=basicInfo['day']))
+
+            for i in range(0,15):
+                self.jbd_basicInfo_v9.set_label('{x}'.format(x=basicInfo['bal'+str(i)]))
+                self.dat.jbd_bal[i] = basicInfo['bal'+str(i)]
+                # self.jbd_basicInfo_v10.set_label('{x}'.format(x=basicInfo['bal1']))
+                # self.jbd_basicInfo_v11.set_label('{x}'.format(x=basicInfo['bal2']))
+                # self.jbd_basicInfo_v12.set_label('{x}'.format(x=basicInfo['bal3']))
+                # self.jbd_basicInfo_v13.set_label('{x}'.format(x=basicInfo['bal4']))
+                # self.jbd_basicInfo_v14.set_label('{x}'.format(x=basicInfo['bal5']))
+                # self.jbd_basicInfo_v15.set_label('{x}'.format(x=basicInfo['bal6']))
+                # self.jbd_basicInfo_v16.set_label('{x}'.format(x=basicInfo['bal7']))
+                # self.jbd_basicInfo_v17.set_label('{x}'.format(x=basicInfo['bal8']))
+                # self.jbd_basicInfo_v18.set_label('{x}'.format(x=basicInfo['bal9']))
+                # self.jbd_basicInfo_v19.set_label('{x}'.format(x=basicInfo['bal10']))
+                # self.jbd_basicInfo_v20.set_label('{x}'.format(x=basicInfo['bal11']))
+                # self.jbd_basicInfo_v21.set_label('{x}'.format(x=basicInfo['bal12']))
+                # self.jbd_basicInfo_v22.set_label('{x}'.format(x=basicInfo['bal13']))
+                # self.jbd_basicInfo_v23.set_label('{x}'.format(x=basicInfo['bal14']))
+                # self.jbd_basicInfo_v24.set_label('{x}'.format(x=basicInfo['bal15']))
 
         if self.jbd_read_state == 1:
             #print("\n\nreading Cell Info:")  # ======================================================================
             cellInfo = self.j.readCellInfo()
             # print(json.dumps(cellInfo, indent = 2))
-            if(0):
-                for name, value in cellInfo.items():
-                    try:
-                        value = value / 1000
-                        print(name, f'{value:7.3f}')
-                    except Exception as e:
-                        print(e)
-            else:
-                self.jbd_cell_volts_v0.set_label(f'{cellInfo["cell0_mv"]/1000:7.3f}')
-                self.jbd_cell_volts_v1.set_label(f'{cellInfo["cell1_mv"]/1000:7.3f}')
-                self.jbd_cell_volts_v2.set_label(f'{cellInfo["cell2_mv"]/1000:7.3f}')
-                self.jbd_cell_volts_v3.set_label(f'{cellInfo["cell3_mv"]/1000:7.3f}')
-                self.jbd_cell_volts_v4.set_label(f'{cellInfo["cell4_mv"]/1000:7.3f}')
-                self.jbd_cell_volts_v5.set_label(f'{cellInfo["cell5_mv"]/1000:7.3f}')
-                self.jbd_cell_volts_v6.set_label(f'{cellInfo["cell6_mv"]/1000:7.3f}')
-                self.jbd_cell_volts_v7.set_label(f'{cellInfo["cell7_mv"]/1000:7.3f}')
-                self.jbd_cell_volts_v8.set_label(f'{cellInfo["cell8_mv"]/1000:7.3f}')
-                self.jbd_cell_volts_v9.set_label(f'{cellInfo["cell9_mv"]/1000:7.3f}')
-                self.jbd_cell_volts_v10.set_label(f'{cellInfo["cell10_mv"]/1000:7.3f}')
-                self.jbd_cell_volts_v11.set_label(f'{cellInfo["cell11_mv"]/1000:7.3f}')
-                self.jbd_cell_volts_v12.set_label(f'{cellInfo["cell12_mv"]/1000:7.3f}')
-                self.jbd_cell_volts_v13.set_label(f'{cellInfo["cell13_mv"]/1000:7.3f}')
-                self.jbd_cell_volts_v14.set_label(f'{cellInfo["cell14_mv"]/1000:7.3f}')
-                self.jbd_cell_volts_v15.set_label(f'{cellInfo["cell15_mv"]/1000:7.3f}')
+            # if False:
+            #     for name, value in cellInfo.items():
+            #         try:
+            #             value = value / 1000
+            #             print(name, f'{value:7.3f}')
+            #         except Exception as e:
+            #             print(e)
+            # else:
+            for i in range(0,15):
+                self.dat.jbd_cell_mv[i] = cellInfo["cell"+str(i)+"_mv"] / 1000 # save these values for the cell graph
+
+            self.jbd_cell_volts_v0.set_label(f'{cellInfo["cell0_mv"]/1000:7.3f}')
+            self.jbd_cell_volts_v1.set_label(f'{cellInfo["cell1_mv"]/1000:7.3f}')
+            self.jbd_cell_volts_v2.set_label(f'{cellInfo["cell2_mv"]/1000:7.3f}')
+            self.jbd_cell_volts_v3.set_label(f'{cellInfo["cell3_mv"]/1000:7.3f}')
+            self.jbd_cell_volts_v4.set_label(f'{cellInfo["cell4_mv"]/1000:7.3f}')
+            self.jbd_cell_volts_v5.set_label(f'{cellInfo["cell5_mv"]/1000:7.3f}')
+            self.jbd_cell_volts_v6.set_label(f'{cellInfo["cell6_mv"]/1000:7.3f}')
+            self.jbd_cell_volts_v7.set_label(f'{cellInfo["cell7_mv"]/1000:7.3f}')
+            self.jbd_cell_volts_v8.set_label(f'{cellInfo["cell8_mv"]/1000:7.3f}')
+            self.jbd_cell_volts_v9.set_label(f'{cellInfo["cell9_mv"]/1000:7.3f}')
+            self.jbd_cell_volts_v10.set_label(f'{cellInfo["cell10_mv"]/1000:7.3f}')
+            self.jbd_cell_volts_v11.set_label(f'{cellInfo["cell11_mv"]/1000:7.3f}')
+            self.jbd_cell_volts_v12.set_label(f'{cellInfo["cell12_mv"]/1000:7.3f}')
+            self.jbd_cell_volts_v13.set_label(f'{cellInfo["cell13_mv"]/1000:7.3f}')
+            self.jbd_cell_volts_v14.set_label(f'{cellInfo["cell14_mv"]/1000:7.3f}')
+            self.jbd_cell_volts_v15.set_label(f'{cellInfo["cell15_mv"]/1000:7.3f}')
 
 
             # print("\n\nDevice Info:")  # ======================================================================
@@ -2381,6 +2394,28 @@ class App:
             ctx_ctrlTemp.fill()
         except Exception as e:
             log("Exception - on_draw_mot_ctrl_tmp: " + str(e))
+
+    def on_draw_jbd_cells(self, drawAreaJbdCells, ctx_jbd_cells):
+        try:
+            ctx_jbd_cells.set_source_rgb(0.8, .8, .8)  # bar background color
+            ctx_jbd_cells.set_line_width(50)
+            cell_bar_width = 200/20
+            cell_bar_width_fill = cell_bar_width-2
+            cell_widget_height = 150
+
+            # log("SOC = " + str(self.data_holder.soc))
+            for i in range(0, 15):
+                if self.dat.jbd_cells_mv[i] is not None:
+                    cell_widget_height = self.dat.jbd_cell_mv[i]
+                    if self.dat.jbd_bal[i]:
+                        ctx_jbd_cells.set_source_rgb(0, 255, 0)
+                    else:
+                        ctx_jbd_cells.set_source_rgb(0, 200, 200)
+                    ctx_jbd_cells.rectangle(i*cell_bar_width, 0, cell_bar_width_fill, cell_widget_height)
+                    ctx_jbd_cells.fill()
+
+        except Exception as e:
+            log("Exception - on_draw_jbd_cells: " + str(e))
 
     # --------------------------------------------------------- draw motor temp bar -------------------
     def on_draw_mot_temp(self, drawAreaMotTemp, ctx_motTemp):

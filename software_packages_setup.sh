@@ -36,6 +36,10 @@ sudo apt remove update-notifier update-notifier-common
 sudo usermod -a -G dialout neb
 
 
+sudo add-apt-repository ppa:deadsnakes/ppa -y
+sudo apt update -y
+sudo apt install python3.11 -y
+
 sudo mv /etc/xdg/autostart/upg-notifier-autostart.desktop /etc/xdg/autostart/upg-notifier-autostart.desktop_disabled
 
 echo "Touchscreen driver available at: https://www.eeti.com/drivers_Linux.html"

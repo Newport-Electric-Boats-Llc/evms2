@@ -1,0 +1,23 @@
+Metadata-Version: 2.1
+Name: bmstools
+Version: 1.2.0
+Summary: This package aims to provide open source tools for popular Battery Management Systems (BMS)
+Home-page: https://gitlab.com/MrSurly/bms-tools.git
+Author: Eric Poulsen
+Author-email: "Eric Poulsen" <eric@zyxod.com>
+Maintainer: Eric Poulsen
+Maintainer-email: "Eric Poulsen" <eric@zyxod.com>
+License: Creative Commons Attribution-Noncommercial-Share Alike license
+Project-URL: Bug Tracker, https://gitlab.com/bms-tools/bms-tools/-/issues
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: POSIX :: Linux
+Requires-Python: >= 3.6
+Description-Content-Type: text/markdown
+Provides-Extra: gui
+License-File: LICENSE
+
+Please see [https://gitlab.com/MrSurly/bms-tools](https://gitlab.com/MrSurly/bms-tools)
+

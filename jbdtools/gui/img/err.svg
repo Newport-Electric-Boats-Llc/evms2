@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   viewBox="0 0 250 250"
+   version="1.1"
+   id="svg8"
+   sodipodi:docname="err.svg"
+   inkscape:export-filename="C:\Users\epoulsen\cyberdeck\hw\battery\batt_icon_128.png"
+   inkscape:export-xdpi="25.6"
+   inkscape:export-ydpi="25.6"
+   inkscape:version="0.92.1 r15371"
+   width="250"
+   height="250">
+  <metadata
+     id="metadata14">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs12" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="960"
+     inkscape:window-height="1017"
+     id="namedview10"
+     showgrid="false"
+     inkscape:zoom="1.2825904"
+     inkscape:cx="108.09505"
+     inkscape:cy="331.36067"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg8"
+     inkscape:pagecheckerboard="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:object-paths="true"
+     inkscape:snap-global="false"
+     units="px">
+    <sodipodi:guide
+       position="-416.50734,405.63094"
+       orientation="0,1"
+       id="guide4499"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="-394.81243,-39.369053"
+       orientation="0,1"
+       id="guide4501"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
+  <flowRoot
+     xml:space="preserve"
+     id="flowRoot4495"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:125%;font-family:Webdings;-inkscape-font-specification:Webdings;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     transform="translate(-862.99889,-190.63095)"><flowRegion
+       id="flowRegion4497"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Webdings;-inkscape-font-specification:Webdings"><rect
+         id="rect4499"
+         width="394.254"
+         height="305.27838"
+         x="-495.50211"
+         y="-250.21361"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Webdings;-inkscape-font-specification:Webdings" /></flowRegion><flowPara
+       id="flowPara4501"></flowPara></flowRoot>  <flowRoot
+     xml:space="preserve"
+     id="flowRoot4511"
+     style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     transform="translate(-862.99889,-190.63095)"><flowRegion
+       id="flowRegion4513"><rect
+         id="rect4515"
+         width="81.305298"
+         height="75.169044"
+         x="-404.99243"
+         y="-184.24893" /></flowRegion><flowPara
+       id="flowPara4517"></flowPara></flowRoot>  <g
+     aria-label="r"
+     transform="matrix(9.5238095,0,0,9.5238095,4915.4576,904.07365)"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:125%;font-family:Webdings;-inkscape-font-specification:Webdings;letter-spacing:0px;word-spacing:0px;opacity:1;vector-effect:none;fill:#b70000;fill-opacity:1;stroke:none;stroke-width:0.39685038;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     id="flowRoot4519">
+    <path
+       d="m -489.87305,-68.677734 h -3.75 l -9.375,-9.257813 -9.25781,9.257813 h -3.86719 v -3.75 l 9.25782,-9.375 -9.25782,-9.257813 v -3.867187 h 3.86719 l 9.25781,9.257812 9.375,-9.257812 h 3.75 v 3.867187 l -9.25781,9.257813 9.25781,9.257812 z"
+       id="path4527"
+       inkscape:connector-curvature="0"
+       style="vector-effect:none;fill:#b70000;fill-opacity:1;stroke:none;stroke-width:0.39685038;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+  </g>
+</svg>

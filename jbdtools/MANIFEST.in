@@ -1,0 +1,3 @@
+include versioneer.py
+include bmstools/_version.py
+include gui/jbd_gui.py

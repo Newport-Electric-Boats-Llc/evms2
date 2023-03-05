@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   viewBox="0 0 720 720"
+   version="1.1"
+   id="svg8"
+   sodipodi:docname="dsg_fet_enabled.svg"
+   inkscape:export-filename="C:\Users\epoulsen\cyberdeck\hw\battery\batt_icon_128.png"
+   inkscape:export-xdpi="25.6"
+   inkscape:export-ydpi="25.6"
+   inkscape:version="0.92.1 r15371"
+   width="720"
+   height="720">
+  <metadata
+     id="metadata14">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs12" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     id="namedview10"
+     showgrid="false"
+     inkscape:zoom="0.46093749"
+     inkscape:cx="-797.81752"
+     inkscape:cy="88.474546"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg8"
+     inkscape:pagecheckerboard="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:object-paths="true"
+     inkscape:snap-global="false">
+    <sodipodi:guide
+       position="36.49153,445"
+       orientation="0,1"
+       id="guide4499"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="58.18644,0"
+       orientation="0,1"
+       id="guide4501"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
+  <g
+     id="g6155"
+     transform="translate(0,-120)">
+    <rect
+       y="295.70984"
+       x="16.548721"
+       height="411.58466"
+       width="275.63776"
+       id="rect4506"
+       style="opacity:1;vector-effect:none;fill:#808080;fill-opacity:1;stroke:none;stroke-width:37.41732407;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <path
+       sodipodi:nodetypes="sscsssssssscssscsssssssscc"
+       d="m 100,240 c -15,0 -20,3.38 -20,20 v 15 H 35 C 5.453,275 0,280.453 0,310 v 375 c 0,29.547 5.453,35 35,35 h 240 c 29.547,0 35,-5.453 35,-35 V 310 c 0,-29.547 -5.453,-35 -35,-35 h -45 v -15 c 0,-16.62 -5,-20 -20,-20 z M 51.906,309.813 C 56.572,309.833 62.5,310 70,310 h 170 c 40,0 35,-5 35,35 v 305 c 0,40 5,35 -35,35 H 70 c -40,0 -35,5 -35,-35 V 345 c 0,-32.5 -3.31,-35.283 16.906,-35.188 z"
+       id="path4"
+       style="fill:#000000;fill-opacity:1"
+       inkscape:connector-curvature="0" />
+    <path
+       inkscape:connector-curvature="0"
+       id="rect4491"
+       d="m 401.85623,335.42188 v 95.02343 H 127.88552 v 134.10938 h 273.97071 v 95.02343 L 542.21951,578.53906 682.58279,497.5 542.21951,416.46094 Z"
+       style="opacity:1;vector-effect:none;fill:#00b700;fill-opacity:1;stroke:#000000;stroke-width:37.41732407;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+  </g>
+</svg>
