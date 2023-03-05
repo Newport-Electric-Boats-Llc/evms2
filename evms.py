@@ -7,19 +7,24 @@
 #   Filename: evms.py
 #
 ######################################################################################################################
+#!/usr/bin/env python
+
+import sys
+# sys.path.insert(0, '/home/neb/evms2/jbdtools')
+# sys.path.insert(0, '/home/neb/evms2/jbdtools/bmstools')
+# sys.path.insert(0, '/home/neb/evms2/jbdtools/bmstools/jbd')
+import bmstools.jbd
+
 
 import gi
-import sys
+
 import logging
 import remote
 import glob
 import csv
 import importlib
-
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk as gtk
-from gi.repository import Gdk as gdk
-import cairo
 from gi.repository import GLib
 
 from dateutil import tz
@@ -39,7 +44,7 @@ import pynmea2
 from math import pi
 
 # -- JDB BMS includes
-import bmstools.jbd
+
 import json
 
 
@@ -57,9 +62,17 @@ def log(message):
     log_window_buffer += message + '\n'
     logging.info(message)
 
+
+
 class App:
     def __init__(self):
-        self.sw_ver_evms = "1.1.8"
+        self.sw_ver_evms = "1.2.1"
+
+        jbd_ser = serial.Serial('/dev/ttyUSB0')
+        self.j = bmstools.jbd.JBD(jbd_ser)
+        self.j.debug = True
+        self.jbd_read_state = 0
+
         self.appStartTimeString = appStartTimeString
         self.appStartDateString = appStartDateString
         self.SysLog = None
@@ -69,9 +82,18 @@ class App:
         self.sys_logging_enabled = True
         self.can_tx_msgs = False
         self.lfp_banks = 1
+        self.pack_1_capacity = 10000
+        self.pack_2_capacity = 15000 #defualt value
         self.select_lfp_bank_2 = False
         self.config_info = self.read_evms_cfg_settings()
         self.dat = DataHolder()#'logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
+
+        # - initialze variables used for pack 2 (JBD BMS) so they are available for calculations...
+        self.dat.pack2_volts    = 0
+        self.dat.pack2_amps     = 0
+        self.dat.pack2_soc      = 0
+        self.dat.pack2_full_cap = 0
+
         self.mapPlots = mapPlots('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
         self.evms_can = evms_can('logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
         self.evms_about_top_text = 'The EVMS system is for display and monitoring the electric propulsion system status. Motor control is not affected by the EMVS setings.'
@@ -105,7 +127,7 @@ class App:
         try:
             self.gpsPort = None
             self.gps_baudrate = 9600  # Default baud rate
-            self.gps_ports = ["/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyUSB2", "/dev/ttyACM0", "/dev/ttyACM1"]
+            self.gps_ports = ["/dev/ttyACM0", "/dev/ttyACM1", "/dev/ttyUSB1", "/dev/ttyUSB2"] #"/dev/ttyUSB0", USB0 is for JBD
             self.gps_from_file = False
             if sys.argv[2] != 'usb':
                 self.gps_ports = [sys.argv[2]]# Default port name
@@ -129,7 +151,7 @@ class App:
             self.builder = gtk.Builder()
             # if self.display_size == '1280x720':
             #self.builder.add_from_file("evms_1280x720.glade")
-            self.builder.add_from_file("evms_1280x800.glade")
+            self.builder.add_from_file("evms_1280x800_j.glade")
 
         except Exception as e:
             log('Exception __init__ gtk.Builder() : ' + str(e))
@@ -150,7 +172,8 @@ class App:
             self.wifi_combobox = self.builder.get_object('id_wifi_combobox')
             self.wifi_password_box = self.builder.get_object('id_wifi_password')
 
-            self.window.set_decorated(False)
+            #self.window.set_decorated(False)
+            self.window.set_decorated(True)
 
             # ---------------------- application variables ---
             self.plot_power_history = True
@@ -250,8 +273,10 @@ class App:
             self.triplog_select.set_active(1)
 
         def on_switch_tab(notebook, tab, index):
+            if index > 5:
+                return True
             try:
-                tab_list = ['Instruments', 'CAN Data', 'TripLog', 'System', 'AppLog', 'About']
+                tab_list = ['Instruments', 'CAN Data', 'TripLog', 'System', 'JBD_Battery', 'About']
                 log('Selected ' + tab_list[index] + ' Tab')
                 return True # to prevent event from propagation and stop event from being fired twice
             except:
@@ -364,6 +389,418 @@ class App:
                            '9':'(','0':')','-':'_','=':'+',
                            '\\':'|',';':':','\'':'"',',':'<',
                            '.':'>','/':'?','[':'{',']':'}'}
+
+
+
+        #setup JBD Battery Lables and Buttons #---------------------------------------------------------------------------------------
+        self.jbd_basicInfo1 = self.builder.get_object('lab_bi_l1')
+        self.jbd_basicInfo2 = self.builder.get_object("lab_bi_l2")
+        self.jbd_basicInfo3 = self.builder.get_object("lab_bi_l3")
+        self.jbd_basicInfo4 = self.builder.get_object("lab_bi_l4")
+        self.jbd_basicInfo5 = self.builder.get_object("lab_bi_l5")
+        self.jbd_basicInfo6 = self.builder.get_object("lab_bi_l6")
+        self.jbd_basicInfo7 = self.builder.get_object("lab_bi_l7")
+        self.jbd_basicInfo8 = self.builder.get_object("lab_bi_l8")
+        self.jbd_basicInfo9 = self.builder.get_object("lab_bi_l9")
+        self.jbd_basicInfo10 = self.builder.get_object("lab_bi_l10")
+        self.jbd_basicInfo11 = self.builder.get_object("lab_bi_l11")
+        self.jbd_basicInfo12 = self.builder.get_object("lab_bi_l12")
+        self.jbd_basicInfo13 = self.builder.get_object("lab_bi_l13")
+        self.jbd_basicInfo14 = self.builder.get_object("lab_bi_l14")
+        self.jbd_basicInfo15 = self.builder.get_object("lab_bi_l15")
+        self.jbd_basicInfo16 = self.builder.get_object("lab_bi_l16")
+        self.jbd_basicInfo17 = self.builder.get_object("lab_bi_l17")
+        self.jbd_basicInfo18 = self.builder.get_object("lab_bi_l18")
+        self.jbd_basicInfo19 = self.builder.get_object("lab_bi_l19")
+        self.jbd_basicInfo20 = self.builder.get_object("lab_bi_l20")
+        self.jbd_basicInfo21 = self.builder.get_object("lab_bi_l21")
+        self.jbd_basicInfo22 = self.builder.get_object("lab_bi_l22")
+        self.jbd_basicInfo23 = self.builder.get_object("lab_bi_l23")
+        self.jbd_basicInfo24 = self.builder.get_object("lab_bi_l24")
+
+        self.jbd_basicInfo_v1 = self.builder.get_object('lab_bi_v1')
+        self.jbd_basicInfo_v2 = self.builder.get_object("lab_bi_v2")
+        self.jbd_basicInfo_v3 = self.builder.get_object("lab_bi_v3")
+        self.jbd_basicInfo_v4 = self.builder.get_object("lab_bi_v4")
+        self.jbd_basicInfo_v5 = self.builder.get_object("lab_bi_v5")
+        self.jbd_basicInfo_v6 = self.builder.get_object("lab_bi_v6")
+        self.jbd_basicInfo_v7 = self.builder.get_object("lab_bi_v7")
+        self.jbd_basicInfo_v8 = self.builder.get_object("lab_bi_v8")
+        self.jbd_basicInfo_v9 = self.builder.get_object("lab_bi_v9")
+        self.jbd_basicInfo_v10 = self.builder.get_object("lab_bi_v10")
+        self.jbd_basicInfo_v11 = self.builder.get_object("lab_bi_v11")
+        self.jbd_basicInfo_v12 = self.builder.get_object("lab_bi_v12")
+        self.jbd_basicInfo_v13 = self.builder.get_object("lab_bi_v13")
+        self.jbd_basicInfo_v14 = self.builder.get_object("lab_bi_v14")
+        self.jbd_basicInfo_v15 = self.builder.get_object("lab_bi_v15")
+        self.jbd_basicInfo_v16 = self.builder.get_object("lab_bi_v16")
+        self.jbd_basicInfo_v17 = self.builder.get_object("lab_bi_v17")
+        self.jbd_basicInfo_v18 = self.builder.get_object("lab_bi_v18")
+        self.jbd_basicInfo_v19 = self.builder.get_object("lab_bi_v19")
+        self.jbd_basicInfo_v20 = self.builder.get_object("lab_bi_v20")
+        self.jbd_basicInfo_v21 = self.builder.get_object("lab_bi_v21")
+        self.jbd_basicInfo_v22 = self.builder.get_object("lab_bi_v22")
+        self.jbd_basicInfo_v23 = self.builder.get_object("lab_bi_v23")
+        self.jbd_basicInfo_v24 = self.builder.get_object("lab_bi_v24")
+
+        self.jbd_basicInfo1.set_label('Pack Volts:')  # basicInfo['dev_name'])
+        self.jbd_basicInfo2.set_label('Pack Current:')
+        self.jbd_basicInfo3.set_label('SOC:')
+        self.jbd_basicInfo4.set_label('Capacity:')
+        self.jbd_basicInfo5.set_label('Cycle Count:')
+        self.jbd_basicInfo6.set_label('Year:')
+        self.jbd_basicInfo7.set_label('Month:')
+        self.jbd_basicInfo8.set_label('Day:')
+        self.jbd_basicInfo9.set_label('Balance 0:')
+        self.jbd_basicInfo10.set_label('Balance 1:')
+        self.jbd_basicInfo11.set_label('Balance 2:')
+        self.jbd_basicInfo12.set_label('Balance 3:')
+        self.jbd_basicInfo13.set_label('Balance 4:')
+        self.jbd_basicInfo14.set_label('Balance 5:')
+        self.jbd_basicInfo15.set_label('Balance 6:')
+        self.jbd_basicInfo16.set_label('Balance 7:')
+        self.jbd_basicInfo17.set_label('Balance 8:')
+        self.jbd_basicInfo18.set_label('Balance 9:')
+        self.jbd_basicInfo19.set_label('Balance 10:')
+        self.jbd_basicInfo20.set_label('Balance 11:')
+        self.jbd_basicInfo21.set_label('Balance 12:')
+        self.jbd_basicInfo22.set_label('Balance 13:')
+        self.jbd_basicInfo23.set_label('Balance 14:')
+        self.jbd_basicInfo24.set_label('Balance 15:')
+
+        self.jbd_cell_volts_v0 = self.builder.get_object('l_vcell_0')
+        self.jbd_cell_volts_v1 = self.builder.get_object('l_vcell_1')
+        self.jbd_cell_volts_v2 = self.builder.get_object('l_vcell_2')
+        self.jbd_cell_volts_v3 = self.builder.get_object('l_vcell_3')
+        self.jbd_cell_volts_v4 = self.builder.get_object('l_vcell_4')
+        self.jbd_cell_volts_v5 = self.builder.get_object('l_vcell_5')
+        self.jbd_cell_volts_v6 = self.builder.get_object('l_vcell_6')
+        self.jbd_cell_volts_v7 = self.builder.get_object('l_vcell_7')
+        self.jbd_cell_volts_v8 = self.builder.get_object('l_vcell_8')
+        self.jbd_cell_volts_v9 = self.builder.get_object('l_vcell_9')
+        self.jbd_cell_volts_v10 = self.builder.get_object('l_vcell_10')
+        self.jbd_cell_volts_v11 = self.builder.get_object('l_vcell_11')
+        self.jbd_cell_volts_v12 = self.builder.get_object('l_vcell_12')
+        self.jbd_cell_volts_v13 = self.builder.get_object('l_vcell_13')
+        self.jbd_cell_volts_v14 = self.builder.get_object('l_vcell_14')
+        self.jbd_cell_volts_v15 = self.builder.get_object('l_vcell_15')
+
+        self.jbd_cell_volts_0 = self.builder.get_object('l_celli_0')
+        self.jbd_cell_volts_1 = self.builder.get_object('l_celli_1')
+        self.jbd_cell_volts_2 = self.builder.get_object('l_celli_2')
+        self.jbd_cell_volts_3 = self.builder.get_object('l_celli_3')
+        self.jbd_cell_volts_4 = self.builder.get_object('l_celli_4')
+        self.jbd_cell_volts_5 = self.builder.get_object('l_celli_5')
+        self.jbd_cell_volts_6 = self.builder.get_object('l_celli_6')
+        self.jbd_cell_volts_7 = self.builder.get_object('l_celli_7')
+        self.jbd_cell_volts_8 = self.builder.get_object('l_celli_8')
+        self.jbd_cell_volts_9 = self.builder.get_object('l_celli_9')
+        self.jbd_cell_volts_10 = self.builder.get_object('l_celli_10')
+        self.jbd_cell_volts_11 = self.builder.get_object('l_celli_11')
+        self.jbd_cell_volts_12 = self.builder.get_object('l_celli_12')
+        self.jbd_cell_volts_13 = self.builder.get_object('l_celli_13')
+        self.jbd_cell_volts_14 = self.builder.get_object('l_celli_14')
+        self.jbd_cell_volts_15 = self.builder.get_object('l_celli_15')
+
+        self.jbd_cell_volts_0.set_label('Cell 0:')
+        self.jbd_cell_volts_1.set_label('Cell 1:')
+        self.jbd_cell_volts_2.set_label('Cell 2:')
+        self.jbd_cell_volts_3.set_label('Cell 3:')
+        self.jbd_cell_volts_4.set_label('Cell 4:')
+        self.jbd_cell_volts_5.set_label('Cell 5:')
+        self.jbd_cell_volts_6.set_label('Cell 6:')
+        self.jbd_cell_volts_7.set_label('Cell 7:')
+        self.jbd_cell_volts_8.set_label('Cell 8:')
+        self.jbd_cell_volts_9.set_label('Cell 9:')
+        self.jbd_cell_volts_10.set_label('Cell 10:')
+        self.jbd_cell_volts_11.set_label('Cell 11:')
+        self.jbd_cell_volts_12.set_label('Cell 12:')
+        self.jbd_cell_volts_13.set_label('Cell 13:')
+        self.jbd_cell_volts_14.set_label('Cell 14:')
+        self.jbd_cell_volts_15.set_label('Cell 15:')
+
+
+        self.jbd_eeprom_v1  = self.builder.get_object('l_eeprom_v1')
+        self.jbd_eeprom_v2  = self.builder.get_object('l_eeprom_v2')
+        self.jbd_eeprom_v3  = self.builder.get_object('l_eeprom_v3')
+        self.jbd_eeprom_v4  = self.builder.get_object('l_eeprom_v4')
+        self.jbd_eeprom_v5  = self.builder.get_object('l_eeprom_v5')
+        self.jbd_eeprom_v6  = self.builder.get_object('l_eeprom_v6')
+        self.jbd_eeprom_v7  = self.builder.get_object('l_eeprom_v7')
+        self.jbd_eeprom_v8  = self.builder.get_object('l_eeprom_v8')
+        self.jbd_eeprom_v9  = self.builder.get_object('l_eeprom_v9')
+        self.jbd_eeprom_v10 = self.builder.get_object('l_eeprom_v10')
+        self.jbd_eeprom_v11 = self.builder.get_object('l_eeprom_v11')
+        self.jbd_eeprom_v12 = self.builder.get_object('l_eeprom_v12')
+        self.jbd_eeprom_v13 = self.builder.get_object('l_eeprom_v13')
+        self.jbd_eeprom_v14 = self.builder.get_object('l_eeprom_v14')
+        self.jbd_eeprom_v15 = self.builder.get_object('l_eeprom_v15')
+        self.jbd_eeprom_v16 = self.builder.get_object('l_eeprom_v16')
+        self.jbd_eeprom_v17 = self.builder.get_object('l_eeprom_v17')
+        self.jbd_eeprom_v18 = self.builder.get_object('l_eeprom_v18')
+        self.jbd_eeprom_v19 = self.builder.get_object('l_eeprom_v19')
+        self.jbd_eeprom_v20 = self.builder.get_object('l_eeprom_v20')
+        self.jbd_eeprom_v21 = self.builder.get_object('l_eeprom_v21')
+        self.jbd_eeprom_v22 = self.builder.get_object('l_eeprom_v22')
+        self.jbd_eeprom_v23 = self.builder.get_object('l_eeprom_v23')
+        self.jbd_eeprom_v24 = self.builder.get_object('l_eeprom_v24')
+        self.jbd_eeprom_v25 = self.builder.get_object('l_eeprom_v25')
+        self.jbd_eeprom_v26 = self.builder.get_object('l_eeprom_v26')
+        self.jbd_eeprom_v27 = self.builder.get_object('l_eeprom_v27')
+        self.jbd_eeprom_v28 = self.builder.get_object('l_eeprom_v28')
+        self.jbd_eeprom_v29 = self.builder.get_object('l_eeprom_v29')
+        self.jbd_eeprom_v30 = self.builder.get_object('l_eeprom_v30')
+        self.jbd_eeprom_v31 = self.builder.get_object('l_eeprom_v31')
+        self.jbd_eeprom_v32 = self.builder.get_object('l_eeprom_v32')
+
+        self.jbd_eeprom_v33 = self.builder.get_object('l_eeprom_v33')
+        self.jbd_eeprom_v34 = self.builder.get_object('l_eeprom_v34')
+        self.jbd_eeprom_v35 = self.builder.get_object('l_eeprom_v35')
+        self.jbd_eeprom_v36 = self.builder.get_object('l_eeprom_v36')
+        self.jbd_eeprom_v37 = self.builder.get_object('l_eeprom_v37')
+        self.jbd_eeprom_v38 = self.builder.get_object('l_eeprom_v38')
+        self.jbd_eeprom_v39 = self.builder.get_object('l_eeprom_v39')
+        self.jbd_eeprom_v40 = self.builder.get_object('l_eeprom_v40')
+        self.jbd_eeprom_v41 = self.builder.get_object('l_eeprom_v41')
+        self.jbd_eeprom_v42 = self.builder.get_object('l_eeprom_v42')
+        self.jbd_eeprom_v43 = self.builder.get_object('l_eeprom_v43')
+        self.jbd_eeprom_v44 = self.builder.get_object('l_eeprom_v44')
+        self.jbd_eeprom_v45 = self.builder.get_object('l_eeprom_v45')
+        self.jbd_eeprom_v46 = self.builder.get_object('l_eeprom_v46')
+        self.jbd_eeprom_v47 = self.builder.get_object('l_eeprom_v47')
+        self.jbd_eeprom_v48 = self.builder.get_object('l_eeprom_v48')
+        self.jbd_eeprom_v49 = self.builder.get_object('l_eeprom_v49')
+        self.jbd_eeprom_v50 = self.builder.get_object('l_eeprom_v50')
+        self.jbd_eeprom_v51 = self.builder.get_object('l_eeprom_v51')
+        self.jbd_eeprom_v52 = self.builder.get_object('l_eeprom_v52')
+        self.jbd_eeprom_v53 = self.builder.get_object('l_eeprom_v53')
+        self.jbd_eeprom_v54 = self.builder.get_object('l_eeprom_v54')
+        self.jbd_eeprom_v55 = self.builder.get_object('l_eeprom_v55')
+        self.jbd_eeprom_v56 = self.builder.get_object('l_eeprom_v56')
+        self.jbd_eeprom_v57 = self.builder.get_object('l_eeprom_v57')
+        self.jbd_eeprom_v58 = self.builder.get_object('l_eeprom_v58')
+        self.jbd_eeprom_v59 = self.builder.get_object('l_eeprom_v59')
+        self.jbd_eeprom_v60 = self.builder.get_object('l_eeprom_v60')
+        self.jbd_eeprom_v61 = self.builder.get_object('l_eeprom_v61')
+        self.jbd_eeprom_v62 = self.builder.get_object('l_eeprom_v62')
+
+
+
+        self.jbd_eeprom_v63 = self.builder.get_object('l_eeprom_v63')
+        self.jbd_eeprom_v64 = self.builder.get_object('l_eeprom_v64')
+        self.jbd_eeprom_v65 = self.builder.get_object('l_eeprom_v65')
+        self.jbd_eeprom_v66 = self.builder.get_object('l_eeprom_v66')
+        self.jbd_eeprom_v67 = self.builder.get_object('l_eeprom_v67')
+        self.jbd_eeprom_v68 = self.builder.get_object('l_eeprom_v68')
+        self.jbd_eeprom_v69 = self.builder.get_object('l_eeprom_v69')
+        self.jbd_eeprom_v70 = self.builder.get_object('l_eeprom_v70')
+        self.jbd_eeprom_v71 = self.builder.get_object('l_eeprom_v71')
+        self.jbd_eeprom_v72 = self.builder.get_object('l_eeprom_v72')
+        self.jbd_eeprom_v73 = self.builder.get_object('l_eeprom_v73')
+        self.jbd_eeprom_v74 = self.builder.get_object('l_eeprom_v74')
+        self.jbd_eeprom_v75 = self.builder.get_object('l_eeprom_v75')
+        self.jbd_eeprom_v76 = self.builder.get_object('l_eeprom_v76')
+        self.jbd_eeprom_v77 = self.builder.get_object('l_eeprom_v77')
+        self.jbd_eeprom_v78 = self.builder.get_object('l_eeprom_v78')
+        self.jbd_eeprom_v79 = self.builder.get_object('l_eeprom_v79')
+        self.jbd_eeprom_v80 = self.builder.get_object('l_eeprom_v80')
+        self.jbd_eeprom_v81 = self.builder.get_object('l_eeprom_v81')
+        self.jbd_eeprom_v82 = self.builder.get_object('l_eeprom_v82')
+        self.jbd_eeprom_v83 = self.builder.get_object('l_eeprom_v83')
+        self.jbd_eeprom_v84 = self.builder.get_object('l_eeprom_v84')
+        self.jbd_eeprom_v85 = self.builder.get_object('l_eeprom_v85')
+        self.jbd_eeprom_v86 = self.builder.get_object('l_eeprom_v86')
+        self.jbd_eeprom_v87 = self.builder.get_object('l_eeprom_v87')
+        self.jbd_eeprom_v88 = self.builder.get_object('l_eeprom_v88')
+
+
+        self.jbd_eeprom_1  = self.builder.get_object('l_eeprom_1')
+        self.jbd_eeprom_2  = self.builder.get_object('l_eeprom_2')
+        self.jbd_eeprom_3  = self.builder.get_object('l_eeprom_3')
+        self.jbd_eeprom_4  = self.builder.get_object('l_eeprom_4')
+        self.jbd_eeprom_5  = self.builder.get_object('l_eeprom_5')
+        self.jbd_eeprom_6  = self.builder.get_object('l_eeprom_6')
+        self.jbd_eeprom_7  = self.builder.get_object('l_eeprom_7')
+        self.jbd_eeprom_8  = self.builder.get_object('l_eeprom_8')
+        self.jbd_eeprom_9  = self.builder.get_object('l_eeprom_9')
+        self.jbd_eeprom_10 = self.builder.get_object('l_eeprom_10')
+        self.jbd_eeprom_11 = self.builder.get_object('l_eeprom_11')
+        self.jbd_eeprom_12 = self.builder.get_object('l_eeprom_12')
+        self.jbd_eeprom_13 = self.builder.get_object('l_eeprom_13')
+        self.jbd_eeprom_14 = self.builder.get_object('l_eeprom_14')
+        self.jbd_eeprom_15 = self.builder.get_object('l_eeprom_15')
+        self.jbd_eeprom_16 = self.builder.get_object('l_eeprom_16')
+        self.jbd_eeprom_17 = self.builder.get_object('l_eeprom_17')
+        self.jbd_eeprom_18 = self.builder.get_object('l_eeprom_18')
+        self.jbd_eeprom_19 = self.builder.get_object('l_eeprom_19')
+        self.jbd_eeprom_20 = self.builder.get_object('l_eeprom_20')
+        self.jbd_eeprom_21 = self.builder.get_object('l_eeprom_21')
+        self.jbd_eeprom_22 = self.builder.get_object('l_eeprom_22')
+        self.jbd_eeprom_23 = self.builder.get_object('l_eeprom_23')
+        self.jbd_eeprom_24 = self.builder.get_object('l_eeprom_24')
+        self.jbd_eeprom_25 = self.builder.get_object('l_eeprom_25')
+        self.jbd_eeprom_26 = self.builder.get_object('l_eeprom_26')
+        self.jbd_eeprom_27 = self.builder.get_object('l_eeprom_27')
+        self.jbd_eeprom_28 = self.builder.get_object('l_eeprom_28')
+        self.jbd_eeprom_29 = self.builder.get_object('l_eeprom_29')
+        self.jbd_eeprom_30 = self.builder.get_object('l_eeprom_30')
+        self.jbd_eeprom_31 = self.builder.get_object('l_eeprom_31')
+        self.jbd_eeprom_32 = self.builder.get_object('l_eeprom_32')
+
+        self.jbd_eeprom_33 = self.builder.get_object('l_eeprom_33')
+        self.jbd_eeprom_34 = self.builder.get_object('l_eeprom_34')
+        self.jbd_eeprom_35 = self.builder.get_object('l_eeprom_35')
+        self.jbd_eeprom_36 = self.builder.get_object('l_eeprom_36')
+        self.jbd_eeprom_37 = self.builder.get_object('l_eeprom_37')
+        self.jbd_eeprom_38 = self.builder.get_object('l_eeprom_38')
+        self.jbd_eeprom_39 = self.builder.get_object('l_eeprom_39')
+        self.jbd_eeprom_40 = self.builder.get_object('l_eeprom_40')
+        self.jbd_eeprom_41 = self.builder.get_object('l_eeprom_41')
+        self.jbd_eeprom_42 = self.builder.get_object('l_eeprom_42')
+        self.jbd_eeprom_43 = self.builder.get_object('l_eeprom_43')
+        self.jbd_eeprom_44 = self.builder.get_object('l_eeprom_44')
+        self.jbd_eeprom_45 = self.builder.get_object('l_eeprom_45')
+        self.jbd_eeprom_46 = self.builder.get_object('l_eeprom_46')
+        self.jbd_eeprom_47 = self.builder.get_object('l_eeprom_47')
+        self.jbd_eeprom_48 = self.builder.get_object('l_eeprom_48')
+        self.jbd_eeprom_49 = self.builder.get_object('l_eeprom_49')
+        self.jbd_eeprom_50 = self.builder.get_object('l_eeprom_50')
+        self.jbd_eeprom_51 = self.builder.get_object('l_eeprom_51')
+        self.jbd_eeprom_52 = self.builder.get_object('l_eeprom_52')
+        self.jbd_eeprom_53 = self.builder.get_object('l_eeprom_53')
+        self.jbd_eeprom_54 = self.builder.get_object('l_eeprom_54')
+        self.jbd_eeprom_55 = self.builder.get_object('l_eeprom_55')
+        self.jbd_eeprom_56 = self.builder.get_object('l_eeprom_56')
+        self.jbd_eeprom_57 = self.builder.get_object('l_eeprom_57')
+        self.jbd_eeprom_58 = self.builder.get_object('l_eeprom_58')
+        self.jbd_eeprom_59 = self.builder.get_object('l_eeprom_59')
+        self.jbd_eeprom_60 = self.builder.get_object('l_eeprom_60')
+        self.jbd_eeprom_61 = self.builder.get_object('l_eeprom_61')
+        self.jbd_eeprom_62 = self.builder.get_object('l_eeprom_62')
+
+
+
+        self.jbd_eeprom_63 = self.builder.get_object('l_eeprom_63')
+        self.jbd_eeprom_64 = self.builder.get_object('l_eeprom_64')
+        self.jbd_eeprom_65 = self.builder.get_object('l_eeprom_65')
+        self.jbd_eeprom_66 = self.builder.get_object('l_eeprom_66')
+        self.jbd_eeprom_67 = self.builder.get_object('l_eeprom_67')
+        self.jbd_eeprom_68 = self.builder.get_object('l_eeprom_68')
+        self.jbd_eeprom_69 = self.builder.get_object('l_eeprom_69')
+        self.jbd_eeprom_70 = self.builder.get_object('l_eeprom_70')
+        self.jbd_eeprom_71 = self.builder.get_object('l_eeprom_71')
+        self.jbd_eeprom_72 = self.builder.get_object('l_eeprom_72')
+        self.jbd_eeprom_73 = self.builder.get_object('l_eeprom_73')
+        self.jbd_eeprom_74 = self.builder.get_object('l_eeprom_74')
+        self.jbd_eeprom_75 = self.builder.get_object('l_eeprom_75')
+        self.jbd_eeprom_76 = self.builder.get_object('l_eeprom_76')
+        self.jbd_eeprom_77 = self.builder.get_object('l_eeprom_77')
+        self.jbd_eeprom_78 = self.builder.get_object('l_eeprom_78')
+        self.jbd_eeprom_79 = self.builder.get_object('l_eeprom_79')
+        self.jbd_eeprom_80 = self.builder.get_object('l_eeprom_80')
+        self.jbd_eeprom_81 = self.builder.get_object('l_eeprom_81')
+        self.jbd_eeprom_82 = self.builder.get_object('l_eeprom_82')
+        self.jbd_eeprom_83 = self.builder.get_object('l_eeprom_83')
+        self.jbd_eeprom_84 = self.builder.get_object('l_eeprom_84')
+        self.jbd_eeprom_85 = self.builder.get_object('l_eeprom_85')
+        self.jbd_eeprom_86 = self.builder.get_object('l_eeprom_86')
+        self.jbd_eeprom_87 = self.builder.get_object('l_eeprom_87')
+        self.jbd_eeprom_88 = self.builder.get_object('l_eeprom_88')
+
+
+
+        self.jbd_eeprom_1.set_label('covp')
+        self.jbd_eeprom_2.set_label('covp_rel')
+        self.jbd_eeprom_3.set_label('cuvp')
+        self.jbd_eeprom_4.set_label('cuvp_rel')
+        self.jbd_eeprom_5.set_label('povp')
+        self.jbd_eeprom_6.set_label('povp_rel')
+        self.jbd_eeprom_7.set_label('puvp')
+        self.jbd_eeprom_8.set_label('puvp_rel')
+        self.jbd_eeprom_9.set_label('chgot')
+        self.jbd_eeprom_10.set_label('chgot_rel')
+        self.jbd_eeprom_11.set_label('chgut')
+        self.jbd_eeprom_12.set_label('chgut_rel')
+        self.jbd_eeprom_13.set_label('dsgot')
+        self.jbd_eeprom_14.set_label('dsgot_rel')
+        self.jbd_eeprom_15.set_label('dsgut')
+        self.jbd_eeprom_16.set_label('dsgut_rel')
+        self.jbd_eeprom_17.set_label('chgoc')
+        self.jbd_eeprom_18.set_label('dsgoc')
+        self.jbd_eeprom_19.set_label('cuvp_delay')
+        self.jbd_eeprom_20.set_label('covp_delay')
+        self.jbd_eeprom_21.set_label('puvp_delay')
+        self.jbd_eeprom_22.set_label('povp_delay')
+        self.jbd_eeprom_23.set_label('chgut_delay')
+        self.jbd_eeprom_24.set_label('chgot_delay')
+        self.jbd_eeprom_25.set_label('dsgut_delay')
+        self.jbd_eeprom_26.set_label('dsgot_delay')
+        self.jbd_eeprom_27.set_label('chgoc_delay')
+        self.jbd_eeprom_28.set_label('chgoc_rel')
+        self.jbd_eeprom_29.set_label('dsgoc_delay')
+        self.jbd_eeprom_30.set_label('dsgoc_rel')
+        self.jbd_eeprom_31.set_label('covp_high')
+        self.jbd_eeprom_32.set_label('cuvp_high')
+
+        # set the lablesfor the eeprom fields
+        self.jbd_eeprom_33.set_label('sc')
+        self.jbd_eeprom_34.set_label('sc_delay')
+        self.jbd_eeprom_35.set_label('dsgoc2')
+        self.jbd_eeprom_36.set_label('dsgoc2_delay')
+        self.jbd_eeprom_37.set_label('sc_dsgoc_x2')
+        self.jbd_eeprom_38.set_label('cuvp_high_delay')
+        self.jbd_eeprom_39.set_label('covp_high_delay')
+        self.jbd_eeprom_40.set_label('sc_rel')
+        self.jbd_eeprom_41.set_label('switch')
+        self.jbd_eeprom_42.set_label('scrl')
+        self.jbd_eeprom_43.set_label('balance_en')
+        self.jbd_eeprom_44.set_label('chg_balance_en')
+        self.jbd_eeprom_45.set_label('led_en')
+        self.jbd_eeprom_46.set_label('led_num')
+        self.jbd_eeprom_47.set_label('ntc1')
+        self.jbd_eeprom_48.set_label('ntc2')
+        self.jbd_eeprom_49.set_label('ntc3')
+        self.jbd_eeprom_50.set_label('ntc4')
+        self.jbd_eeprom_51.set_label('ntc5')
+        self.jbd_eeprom_52.set_label('ntc6')
+        self.jbd_eeprom_53.set_label('ntc7')
+        self.jbd_eeprom_54.set_label('ntc8')
+        self.jbd_eeprom_55.set_label('bal_start')
+        self.jbd_eeprom_56.set_label('bal_window')
+        self.jbd_eeprom_57.set_label('shunt_res')
+        self.jbd_eeprom_58.set_label('cell_cnt')
+        self.jbd_eeprom_59.set_label('cycle_cnt')
+        self.jbd_eeprom_60.set_label('serial_num')
+        self.jbd_eeprom_61.set_label('mfg_name')
+        self.jbd_eeprom_62.set_label('device_name')
+
+
+        self.jbd_eeprom_63.set_label('barcode')
+        self.jbd_eeprom_64.set_label('year')
+        self.jbd_eeprom_65.set_label('month')
+        self.jbd_eeprom_66.set_label('day')
+        self.jbd_eeprom_67.set_label('design_cap')
+        self.jbd_eeprom_68.set_label('cycle_cap')
+        self.jbd_eeprom_69.set_label('dsg_rate')
+        self.jbd_eeprom_70.set_label('cap_100')
+        self.jbd_eeprom_71.set_label('cap_80')
+        self.jbd_eeprom_72.set_label('cap_60')
+        self.jbd_eeprom_73.set_label('cap_40')
+        self.jbd_eeprom_74.set_label('cap_20')
+        self.jbd_eeprom_75.set_label('cap_0')
+        self.jbd_eeprom_76.set_label('fet_ctrl')
+        self.jbd_eeprom_77.set_label('led_timer')
+        self.jbd_eeprom_78.set_label('sc_err_cnt')
+        self.jbd_eeprom_79.set_label('chgoc_err_cnt')
+        self.jbd_eeprom_80.set_label('dsgoc_err_cnt')
+        self.jbd_eeprom_81.set_label('covp_err_cnt')
+        self.jbd_eeprom_82.set_label('cuvp_err_cnt')
+        self.jbd_eeprom_83.set_label('chgot_err_cnt')
+        self.jbd_eeprom_84.set_label('chgut_err_cnt')
+        self.jbd_eeprom_85.set_label('dsgot_err_cnt')
+        self.jbd_eeprom_86.set_label('dsgut_err_cnt')
+        self.jbd_eeprom_87.set_label('povp_err_cnt')
+        self.jbd_eeprom_88.set_label('puvp_err_cnt')
 
 
         def connect_to_wifi(button):
@@ -716,7 +1153,7 @@ class App:
             else:
                 try:
                     self.GPSLog = open(self.GPSLogName, 'a+')
-                    self.GPSLog.write('\n\n ******  Newport Electric Boats, LLC  ****** \n'
+                    self.GPSLog.write('\n\n ******  Newport Electric Boats  ****** \n'
                                       'EVMS GPS Logfile, generated '+ self.appStartDateString + ' ' + datetime.now().strftime("%H:%M:%S") + ' with software version: '
                                       + str( self.sw_ver_evms) + '\n')
                     self.GPSLog.write('\n\n\n')
@@ -919,6 +1356,7 @@ class App:
                 executor.submit(self.can_processing_thread, self.CANInterface)
                 executor.submit(gtk.main)
                 executor.submit(self.tenHz_timer_thread)
+                executor.submit(self.jbd_bms_monitor_thread)
             else:
                 try:
                     executor.submit(gtk.main)
@@ -1070,9 +1508,264 @@ class App:
                         self.gps_logging_enabled = False
                 elif line[0] == 'lfp_banks':
                     self.lfp_banks == float(line[1])
+                elif line[0] == 'pack_1_capacity':
+                    self.pack_1_capacity == float(line[1])
+                elif line[0] == 'pack_2_capacity':
+                    self.pack_2_capacity == float(line[1])
 
         return lines[13:]
 
+    # ---------------------------------------------------------------------------------------------------------------
+    def jbd_status(self):
+
+        if self.jbd_read_state == 0:
+            #print("\n\nreading Basic Info:")  # ======================================================================
+            basicInfo = self.j.readBasicInfo()
+            # print(json.dumps(basicInfo, indent = 2))
+
+            if(0):
+                for name, value in basicInfo.items():
+                    try:
+                            match name:
+                                case 'cur_cap':
+                                    print(name, f'{value:7.3f}')
+                                case 'full_cap':
+                                    print(name, f'{value:7.3f}')
+                                case 'bal16' | 'bal17' | 'bal18' | 'bal19' | 'bal20' | 'bal21' | 'bal22' | 'bal23' | 'bal24' | 'bal25' | 'bal26' | 'bal27' | 'bal28' | 'bal29' | 'bal30' | 'bal31':
+                                    pass  # print("skipping " + name)
+                                case 'ntc3' | 'ntc4' | 'ntc5' | 'ntc6' | 'ntc7':
+                                    pass  # print("skipping " + name)
+                                case other:
+                                    print(name, value)
+                    except Exception as e:
+                        print(e)
+            else:
+                #get variables for SOC bar graph, etc..
+                self.dat.pack2_volts = basicInfo["pack_mv"] / 1000
+                self.dat.pack2_amps  = basicInfo["pack_ma"] / 1000
+                self.dat.pack2_soc   = basicInfo["cur_cap"] / 1000
+                self.dat.pack2_full_cap = basicInfo["full_cap"] / 1000
+
+                # load lables on JBD Battery Tab
+                self.jbd_basicInfo_v1.set_label(f'{basicInfo["pack_mv"]/1000:7.3f}')
+                self.jbd_basicInfo_v2.set_label(f'{basicInfo["pack_ma"]/1000:7.3f}')
+                self.jbd_basicInfo_v3.set_label(f'{basicInfo["cur_cap"]/1000:7.3f}')
+                self.jbd_basicInfo_v4.set_label(f'{basicInfo["full_cap"]/1000:7.3f}')
+                self.jbd_basicInfo_v5.set_label('{x}'.format(x=basicInfo['cycle_cnt']))
+                self.jbd_basicInfo_v6.set_label('{x}'.format(x=basicInfo['year']))
+                self.jbd_basicInfo_v7.set_label('{x}'.format(x=basicInfo['month']))
+                self.jbd_basicInfo_v8.set_label('{x}'.format(x=basicInfo['day']))
+                self.jbd_basicInfo_v9.set_label('{x}'.format(x=basicInfo['bal0']))
+                self.jbd_basicInfo_v10.set_label('{x}'.format(x=basicInfo['bal1']))
+                self.jbd_basicInfo_v11.set_label('{x}'.format(x=basicInfo['bal2']))
+                self.jbd_basicInfo_v12.set_label('{x}'.format(x=basicInfo['bal3']))
+                self.jbd_basicInfo_v13.set_label('{x}'.format(x=basicInfo['bal4']))
+                self.jbd_basicInfo_v14.set_label('{x}'.format(x=basicInfo['bal5']))
+                self.jbd_basicInfo_v15.set_label('{x}'.format(x=basicInfo['bal6']))
+                self.jbd_basicInfo_v16.set_label('{x}'.format(x=basicInfo['bal7']))
+                self.jbd_basicInfo_v17.set_label('{x}'.format(x=basicInfo['bal8']))
+                self.jbd_basicInfo_v18.set_label('{x}'.format(x=basicInfo['bal9']))
+                self.jbd_basicInfo_v19.set_label('{x}'.format(x=basicInfo['bal10']))
+                self.jbd_basicInfo_v20.set_label('{x}'.format(x=basicInfo['bal11']))
+                self.jbd_basicInfo_v21.set_label('{x}'.format(x=basicInfo['bal12']))
+                self.jbd_basicInfo_v22.set_label('{x}'.format(x=basicInfo['bal13']))
+                self.jbd_basicInfo_v23.set_label('{x}'.format(x=basicInfo['bal14']))
+                self.jbd_basicInfo_v24.set_label('{x}'.format(x=basicInfo['bal15']))
+
+        if self.jbd_read_state == 1:
+            #print("\n\nreading Cell Info:")  # ======================================================================
+            cellInfo = self.j.readCellInfo()
+            # print(json.dumps(cellInfo, indent = 2))
+            if(0):
+                for name, value in cellInfo.items():
+                    try:
+                        value = value / 1000
+                        print(name, f'{value:7.3f}')
+                    except Exception as e:
+                        print(e)
+            else:
+                self.jbd_cell_volts_v0.set_label(f'{cellInfo["cell0_mv"]/1000:7.3f}')
+                self.jbd_cell_volts_v1.set_label(f'{cellInfo["cell1_mv"]/1000:7.3f}')
+                self.jbd_cell_volts_v2.set_label(f'{cellInfo["cell2_mv"]/1000:7.3f}')
+                self.jbd_cell_volts_v3.set_label(f'{cellInfo["cell3_mv"]/1000:7.3f}')
+                self.jbd_cell_volts_v4.set_label(f'{cellInfo["cell4_mv"]/1000:7.3f}')
+                self.jbd_cell_volts_v5.set_label(f'{cellInfo["cell5_mv"]/1000:7.3f}')
+                self.jbd_cell_volts_v6.set_label(f'{cellInfo["cell6_mv"]/1000:7.3f}')
+                self.jbd_cell_volts_v7.set_label(f'{cellInfo["cell7_mv"]/1000:7.3f}')
+                self.jbd_cell_volts_v8.set_label(f'{cellInfo["cell8_mv"]/1000:7.3f}')
+                self.jbd_cell_volts_v9.set_label(f'{cellInfo["cell9_mv"]/1000:7.3f}')
+                self.jbd_cell_volts_v10.set_label(f'{cellInfo["cell10_mv"]/1000:7.3f}')
+                self.jbd_cell_volts_v11.set_label(f'{cellInfo["cell11_mv"]/1000:7.3f}')
+                self.jbd_cell_volts_v12.set_label(f'{cellInfo["cell12_mv"]/1000:7.3f}')
+                self.jbd_cell_volts_v13.set_label(f'{cellInfo["cell13_mv"]/1000:7.3f}')
+                self.jbd_cell_volts_v14.set_label(f'{cellInfo["cell14_mv"]/1000:7.3f}')
+                self.jbd_cell_volts_v15.set_label(f'{cellInfo["cell15_mv"]/1000:7.3f}')
+
+
+            # print("\n\nDevice Info:")  # ======================================================================
+            # deviceInfo = self.j.readDeviceInfo()
+            # # print(json.dumps(deviceInfo, indent = 2))
+            #
+            # for name, value in deviceInfo.items():
+            #     try:
+            #         match name:
+            #             case 'cur_cap':
+            #                 print(name, f'{value:7.3f}')
+            #             case other:
+            #                 print(name, value)
+            #
+            #     except Exception as e:
+            #         print(e)
+
+        if self.jbd_read_state == 2:
+            #print("\n\nreading EEPROM Info:")  # ======================================================================
+            eepromInfo = self.j.readEeprom()
+            #for name, value in eepromInfo.items():
+            try:
+                self.jbd_eeprom_v1.set_label(f'{eepromInfo["covp"]/1000:7.3f}')
+                self.jbd_eeprom_v2.set_label(f'{eepromInfo["covp_rel"]/100:7.3f}')
+                self.jbd_eeprom_v3.set_label(f'{eepromInfo["cuvp"]/1000:7.3f}')
+                self.jbd_eeprom_v4.set_label(f'{eepromInfo["cuvp_rel"]/1000:7.3f}')
+                self.jbd_eeprom_v5.set_label(f'{eepromInfo["povp"]/100:7.3f}')
+                self.jbd_eeprom_v6.set_label(f'{eepromInfo["povp_rel"]/100:7.3f}')
+                self.jbd_eeprom_v7.set_label(f'{eepromInfo["puvp"]/100:7.3f}')
+                self.jbd_eeprom_v8.set_label(f'{eepromInfo["puvp_rel"]/100:7.3f}')
+                self.jbd_eeprom_v9.set_label(f'{eepromInfo["chgot"]/100:7.3f}')
+                self.jbd_eeprom_v10.set_label(f'{eepromInfo["chgot_rel"]/100:7.3f}')
+                self.jbd_eeprom_v11.set_label(f'{eepromInfo["chgut"]/100:7.3f}')
+                self.jbd_eeprom_v12.set_label(f'{eepromInfo["chgut_rel"]/100:7.3f}')
+                self.jbd_eeprom_v13.set_label(f'{eepromInfo["dsgot"]/100:7.3f}')
+                self.jbd_eeprom_v14.set_label(f'{eepromInfo["dsgot_rel"]/100:7.3f}')
+                self.jbd_eeprom_v15.set_label(f'{eepromInfo["dsgut"]/100:7.3f}')
+                self.jbd_eeprom_v16.set_label(f'{eepromInfo["dsgut_rel"]/100:7.3f}')
+                self.jbd_eeprom_v17.set_label(f'{eepromInfo["chgoc"]/100:7.3f}')
+                self.jbd_eeprom_v18.set_label(f'{eepromInfo["dsgoc"]/100:7.3f}')
+                self.jbd_eeprom_v19.set_label(f'{eepromInfo["cuvp_delay"]/100:7.3f}')
+                self.jbd_eeprom_v20.set_label(f'{eepromInfo["covp_delay"]/100:7.3f}')
+                self.jbd_eeprom_v21.set_label(f'{eepromInfo["puvp_delay"]/100:7.3f}')
+                self.jbd_eeprom_v22.set_label(f'{eepromInfo["povp_delay"]/100:7.3f}')
+                self.jbd_eeprom_v23.set_label(f'{eepromInfo["chgut_delay"]/100:7.3f}')
+                self.jbd_eeprom_v24.set_label(f'{eepromInfo["chgot_delay"]/100:7.3f}')
+                self.jbd_eeprom_v25.set_label(f'{eepromInfo["dsgut_delay"]/100:7.3f}')
+                self.jbd_eeprom_v26.set_label(f'{eepromInfo["dsgot_delay"]/100:7.3f}')
+                self.jbd_eeprom_v27.set_label(f'{eepromInfo["chgoc_delay"]/100:7.3f}')
+                self.jbd_eeprom_v28.set_label(f'{eepromInfo["chgoc_rel"]/100:7.3f}')
+                self.jbd_eeprom_v29.set_label(f'{eepromInfo["dsgoc_delay"]/100:7.3f}')
+                self.jbd_eeprom_v30.set_label(f'{eepromInfo["dsgoc_rel"]/100:7.3f}')
+                self.jbd_eeprom_v31.set_label(f'{eepromInfo["covp_high"]/100:7.3f}')
+                self.jbd_eeprom_v32.set_label(f'{eepromInfo["cuvp_high"]/100:7.3f}')
+
+                self.jbd_eeprom_v33.set_label(f'{eepromInfo["sc"]}')
+                self.jbd_eeprom_v34.set_label(f'{eepromInfo["sc_delay"]}')
+                self.jbd_eeprom_v35.set_label(f'{eepromInfo["dsgoc2"]}')
+                self.jbd_eeprom_v36.set_label(f'{eepromInfo["dsgoc2_delay"]}')
+                self.jbd_eeprom_v37.set_label(f'{eepromInfo["sc_dsgoc_x2"]}')
+                self.jbd_eeprom_v38.set_label(f'{eepromInfo["cuvp_high_delay"]}')
+                self.jbd_eeprom_v39.set_label(f'{eepromInfo["covp_high_delay"]}')
+                self.jbd_eeprom_v40.set_label(f'{eepromInfo["sc_rel"]}')
+                self.jbd_eeprom_v41.set_label(f'{eepromInfo["switch"]}')
+                self.jbd_eeprom_v42.set_label(f'{eepromInfo["scrl"]}')
+
+                # print("DEBUGGING\n") #!@#
+                # print(str(eepromInfo["scrl"]))
+                # print(str(eepromInfo["balance_en"]))
+                # print(str(eepromInfo["chg_balance_en"]))
+                # print(str(eepromInfo["led_en"]))
+
+                self.jbd_eeprom_v43.set_label(f'{eepromInfo["balance_en"]}')
+                self.jbd_eeprom_v44.set_label(f'{eepromInfo["chg_balance_en"]}')
+                self.jbd_eeprom_v45.set_label(f'{eepromInfo["led_en"]}')
+                self.jbd_eeprom_v46.set_label(f'{eepromInfo["led_num"]}')
+                self.jbd_eeprom_v47.set_label(f'{eepromInfo["ntc1"]}')
+                self.jbd_eeprom_v48.set_label(f'{eepromInfo["ntc2"]}')
+                self.jbd_eeprom_v49.set_label(f'{eepromInfo["ntc3"]}')
+                self.jbd_eeprom_v50.set_label(f'{eepromInfo["ntc4"]}')
+                self.jbd_eeprom_v51.set_label(f'{eepromInfo["ntc5"]}')
+                self.jbd_eeprom_v52.set_label(f'{eepromInfo["ntc6"]}')
+                self.jbd_eeprom_v53.set_label(f'{eepromInfo["ntc7"]}')
+                self.jbd_eeprom_v54.set_label(f'{eepromInfo["ntc8"]}')
+                self.jbd_eeprom_v55.set_label(f'{eepromInfo["bal_start"]}')
+                self.jbd_eeprom_v56.set_label(f'{eepromInfo["bal_window"]}')
+                self.jbd_eeprom_v57.set_label(f'{eepromInfo["shunt_res"]}')
+                self.jbd_eeprom_v58.set_label(f'{eepromInfo["cell_cnt"]}')
+                self.jbd_eeprom_v59.set_label(f'{eepromInfo["cycle_cnt"]}')
+                self.jbd_eeprom_v60.set_label(f'{eepromInfo["serial_num"]}')
+                self.jbd_eeprom_v61.set_label(f'{eepromInfo["mfg_name"]}')
+                self.jbd_eeprom_v62.set_label(f'{eepromInfo["device_name"]}')
+
+                self.jbd_eeprom_v63.set_label(f'{eepromInfo["barcode"]}')
+                self.jbd_eeprom_v64.set_label(f'{eepromInfo["year"]}')
+                self.jbd_eeprom_v65.set_label(f'{eepromInfo["month"]}')
+                self.jbd_eeprom_v66.set_label(f'{eepromInfo["day"]}')
+                self.jbd_eeprom_v67.set_label(f'{eepromInfo["design_cap"]}')
+                self.jbd_eeprom_v68.set_label(f'{eepromInfo["cycle_cap"]}')
+                self.jbd_eeprom_v69.set_label(f'{eepromInfo["dsg_rate"]}')
+                self.jbd_eeprom_v70.set_label(f'{eepromInfo["cap_100"]}')
+                self.jbd_eeprom_v71.set_label(f'{eepromInfo["cap_80"]}')
+                self.jbd_eeprom_v72.set_label(f'{eepromInfo["cap_60"]}')
+                self.jbd_eeprom_v73.set_label(f'{eepromInfo["cap_40"]}')
+                self.jbd_eeprom_v74.set_label(f'{eepromInfo["cap_20"]}')
+                self.jbd_eeprom_v75.set_label(f'{eepromInfo["cap_0"]}')
+                self.jbd_eeprom_v76.set_label(f'{eepromInfo["fet_ctrl"]}')
+                self.jbd_eeprom_v77.set_label(f'{eepromInfo["led_timer"]}')
+                self.jbd_eeprom_v78.set_label(f'{eepromInfo["sc_err_cnt"]}')
+                self.jbd_eeprom_v79.set_label(f'{eepromInfo["chgoc_err_cnt"]}')
+                self.jbd_eeprom_v80.set_label(f'{eepromInfo["dsgoc_err_cnt"]}')
+                self.jbd_eeprom_v81.set_label(f'{eepromInfo["covp_err_cnt"]}')
+                self.jbd_eeprom_v82.set_label(f'{eepromInfo["cuvp_err_cnt"]}')
+                self.jbd_eeprom_v83.set_label(f'{eepromInfo["chgot_err_cnt"]}')
+                self.jbd_eeprom_v84.set_label(f'{eepromInfo["chgut_err_cnt"]}')
+                self.jbd_eeprom_v85.set_label(f'{eepromInfo["dsgot_err_cnt"]}')
+                self.jbd_eeprom_v86.set_label(f'{eepromInfo["dsgut_err_cnt"]}')
+                self.jbd_eeprom_v87.set_label(f'{eepromInfo["povp_err_cnt"]}')
+                self.jbd_eeprom_v88.set_label(f'{eepromInfo["puvp_err_cnt"]}')
+
+            except Exception as e:
+                print(e)
+
+
+
+        # print("\n\nSaving EEPROM to file...")
+        # self.j.saveEepromFile("myNewEEpromfile.dat", eepromInfo)
+        #
+        # print("\n\nLoading EEPROM from file...")
+        # eepromDat = self.j.loadEepromFile("myEEpromfile.dat")
+        #
+        # for name, value in eepromDat.items():
+        #     try:
+        #         match name:
+        #             case 'cur_cap':
+        #                 print(name, f'{value:7.3f}')
+        #             case other:
+        #                 print(name, value)
+        #
+        #     except Exception as e:
+        #         print(e)
+        #
+        # print("\n\nWriting EEPROM...")
+        #
+        # try:
+        #     self.j.writeEeprom(eepromDat)
+        # except Exception as e:
+        #     print(e)
+
+    # ---------------------------------------------------------------------------------------------------------------
+    def jbd_bms_monitor_thread(self):
+
+        log("starting jbd_bms_monitor_thread")
+
+        while(True):
+            try:
+                self.jbd_status()
+            except Exception as e:
+                log("ERROR: do_OneSecTask: jbd_status - " + str(e))
+            sleep(2)
+            #update the read state for the next read cycle
+            self.jbd_read_state = self.jbd_read_state + 1
+            if self.jbd_read_state > 2:
+                self.jbd_read_state = 0
+
+            #print("jbd_read_state = " + str(self.jbd_read_state))
 
     # ----------------------------- timing_thread -----------------------------
 
@@ -1740,11 +2433,23 @@ class App:
             ctx_batsoc.set_source_rgb(0.8, .8, .8)  # bar background color
             ctx_batsoc.set_line_width(50)
             battery_widget_height = 400
-            top_right = 200  # mid-point startup condition until can data available.
+            bar_height_1 = 100  # mid-point startup condition until can data available.
+            bar_height_2 = 100
 
             if self.dat.soc is not None:
                 # log("SOC = " + str(self.data_holder.soc))
-                top_right = (battery_widget_height - 4) * int(self.dat.soc) / 100
+
+                pack1_capacity = 10000
+                pack2_capacity = self.dat.pack2_full_cap * 3.55*16 #total energy in watts
+                #print(pack2_capacity)
+
+
+                total_bat_capacity = pack1_capacity + pack2_capacity
+
+                #DEBUG !@#
+                # self.dat.soc = 100
+                # self.dat.pack2_soc = 100
+
                 ctx_batsoc.rectangle(0, 0, 112, battery_widget_height)
                 ctx_batsoc.fill()
                 ctx_batsoc.set_source_rgb(self.dat.bat_R, self.dat.bat_G, self.dat.bat_B)
@@ -1771,7 +2476,41 @@ class App:
                     ctx_batsoc.stroke()  # bar color
                     #ctx_batsoc.fill()
 
-            ctx_batsoc.rectangle(4, battery_widget_height - 4, 104, 4 - top_right)
+            bar_height_1 = (battery_widget_height-4) * int(self.dat.soc) / 100 * (pack1_capacity / total_bat_capacity)
+            ctx_batsoc.rectangle(4, battery_widget_height-4, 104, -1*bar_height_1)
+            ctx_batsoc.fill()
+            # rectanle (x0,y0, x_span, y_span)
+            # +x right, +y is down
+            # ctx_batsoc.rectangle(10,10,50,50)
+            # ctx_batsoc.rectangle(60,60,10,10)
+
+            #update bar color for pack2 fill
+            ctx_batsoc.set_source_rgb(self.dat.bat_R+.2, self.dat.bat_G+.2, self.dat.bat_B-.1)
+
+            if self.dat.soc <= int(self.batt_warn_threshold):
+                ctx_batsoc.set_source_rgb(255, 140, 50)
+                if self.dat.soc <= int(self.batt_crit_threshold):
+                    ctx_batsoc.set_source_rgb(255, 0, 50)
+                ctx_batsoc.set_line_width(6)  # bar color
+                ctx_batsoc.move_to(0, 0)
+                ctx_batsoc.line_to(112, 0)
+                ctx_batsoc.stroke()
+                ctx_batsoc.set_line_width(6)  # bar color
+                ctx_batsoc.move_to(0, battery_widget_height)
+                ctx_batsoc.line_to(112, battery_widget_height)
+                ctx_batsoc.set_line_width(6)  # bar color
+                ctx_batsoc.stroke()
+                ctx_batsoc.move_to(0, 0)
+                ctx_batsoc.line_to(0, battery_widget_height)
+                ctx_batsoc.stroke()
+                ctx_batsoc.set_line_width(6)  # bar color
+                ctx_batsoc.move_to(112, 0)
+                ctx_batsoc.line_to(112, battery_widget_height)
+                ctx_batsoc.stroke()  # bar color
+                # ctx_batsoc.fill()
+
+            bar_height_2 = (battery_widget_height-4-1) * int(self.dat.pack2_soc) / 100 * (pack2_capacity / total_bat_capacity)
+            ctx_batsoc.rectangle(4, battery_widget_height-4-1-bar_height_1, 104, -1*bar_height_2)
             ctx_batsoc.fill()
         except Exception as e:
             log("Error - on_draw_batt_soc: " + str(e))
