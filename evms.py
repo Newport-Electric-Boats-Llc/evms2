@@ -66,7 +66,7 @@ def log(message):
 
 class App:
     def __init__(self):
-        self.sw_ver_evms = "1.2.2"
+        self.sw_ver_evms = "1.2.3"
 
         jbd_ser = serial.Serial('/dev/ttyUSB0')
         self.j = bmstools.jbd.JBD(jbd_ser)
