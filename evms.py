@@ -66,7 +66,7 @@ def log(message):
 
 class App:
     def __init__(self):
-        self.sw_ver_evms = "1.2.3"
+        self.sw_ver_evms = "1.2.4"
 
         jbd_ser = serial.Serial('/dev/ttyUSB0')
         self.j = bmstools.jbd.JBD(jbd_ser)
@@ -81,7 +81,7 @@ class App:
         self.app_logging_enabled = True  # ALWAYS TRUE
         self.sys_logging_enabled = True
         self.can_tx_msgs = False
-        self.lfp_banks = 1
+        self.orion_lfp_banks = 1
         self.pack_1_capacity = 10000
         self.pack_2_capacity = 15000 #defualt value
         self.select_lfp_bank_2 = False
@@ -89,10 +89,11 @@ class App:
         self.dat = DataHolder()#'logs/' + appStartDateString + '_evms_app.log', log_window_buffer)
 
         # - initialze variables used for pack 2 (JBD BMS) so they are available for calculations...
-        self.dat.pack2_volts    = 0
-        self.dat.pack2_amps     = 0
-        self.dat.pack2_soc      = 0
-        self.dat.pack2_full_cap = 0
+        self.dat.jbd_pack_volts    = 0
+        self.dat.jbd_pack_amps     = 0
+        self.dat.jbd_pack_soc      = 0
+        self.dat.jbd_pack_full_cap = 0
+        self.dat.jbd_bank_active = False
         self.dat.jbd_cell_mv    = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         self.dat.jbd_bal        = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
@@ -153,7 +154,7 @@ class App:
             self.builder = gtk.Builder()
             # if self.display_size == '1280x720':
             #self.builder.add_from_file("evms_1280x720.glade")
-            self.builder.add_from_file("evms_1280x800_j.glade")
+            self.builder.add_from_file("evms_1280x800_jbd.glade")
 
         except Exception as e:
             log('Exception __init__ gtk.Builder() : ' + str(e))
@@ -445,7 +446,7 @@ class App:
         self.jbd_basicInfo_v23 = self.builder.get_object("lab_bi_v23")
         self.jbd_basicInfo_v24 = self.builder.get_object("lab_bi_v24")
 
-        self.plotJBDcells = self.builder.get_object("plotJBDcells")
+        self.plotJBDcellVolts = self.builder.get_object("plotJBDcellVolts")
 
         self.jbd_basicInfo1.set_label('Pack Volts:')  # basicInfo['dev_name'])
         self.jbd_basicInfo2.set_label('Pack Current:')
@@ -1341,7 +1342,7 @@ class App:
         self.plotPwrHistAreaSec.connect('draw', self.on_draw_pwr_hist_sec)
         self.plotPwrHistAreaMin.connect('draw', self.on_draw_pwr_hist_min)
         self.plotPwrHistAreaHrs.connect('draw', self.on_draw_pwr_hist_hrs)
-        self.plotJBDcells.connect('draw', self.on_draw_jbd_cells)
+        self.plotJBDcellVolts.connect('draw', self.on_draw_jbd_cells)
 
 
 
@@ -1514,7 +1515,7 @@ class App:
                     else:
                         self.gps_logging_enabled = False
                 elif line[0] == 'lfp_banks':
-                    self.lfp_banks == float(line[1])
+                    self.orion_lfp_banks == float(line[1])
                 elif line[0] == 'pack_1_capacity':
                     self.pack_1_capacity == float(line[1])
                 elif line[0] == 'pack_2_capacity':
@@ -1548,10 +1549,10 @@ class App:
             #             print(e)
             # else:
             #get variables for SOC bar graph, etc..
-            self.dat.pack2_volts = basicInfo["pack_mv"] / 1000
-            self.dat.pack2_amps  = basicInfo["pack_ma"] / 1000
-            self.dat.pack2_soc   = basicInfo["cur_cap"] / 1000
-            self.dat.pack2_full_cap = basicInfo["full_cap"] / 1000
+            self.dat.jbd_pack_volts = basicInfo["pack_mv"] / 1000
+            self.dat.jbd_pack_amps  = basicInfo["pack_ma"] / 1000
+            self.dat.jbd_pack_soc   = basicInfo["cur_cap"] / 1000
+            self.dat.jbd_pack_full_cap = basicInfo["full_cap"] / 1000
 
             # load lables on JBD Battery Tab
             self.jbd_basicInfo_v1.set_label(f'{basicInfo["pack_mv"]/1000:7.3f}')
@@ -1959,7 +1960,7 @@ class App:
                     break
 
                 try:
-                    if self.lfp_banks > 1:
+                    if self.orion_lfp_banks > 1:
                         if self.dat.runTime_100ms % 2 == 0:  # transmit outbound can message(s) every 200 ms
                             self.can_tx_msgs = True
 
@@ -1967,6 +1968,20 @@ class App:
                         dhlog_entry = self.dat.get_dataholder_log()
                         log(dhlog_entry)
                         self.dat.clear_dataholder_log()
+
+                    # -- check if we are we pulling power from the JBD bank or the Orion bank
+                    if self.dat.jbd_pack_amps is not None and self.dat.pack_amps is not None:
+                        if abs(self.dat.pack_amps) >= abs(self.dat.jbd_pack_amps):
+                            self.dat.jbd_bank_active = False
+                        else:
+                            self.dat.jbd_bank_active = True
+
+                    # -- update the pack amps and volts variables based on which bank is active,
+                    # -- so remaining calculations are correct
+                    if self.dat.jbd_bank_active:
+                        self.dat.pack_amps = self.dat.jbd_pack_amps
+                        self.dat.pack_volts = self.dat.jbd_pack_volts
+
 
                     # -- motor power calculations --
                     self.dat.pwr = self.dat.get_motor_pwr()[0] #power in kW (consumed by the motor from the battery)
@@ -2397,25 +2412,34 @@ class App:
         except Exception as e:
             log("Exception - on_draw_mot_ctrl_tmp: " + str(e))
 
+    # --------------------------------------------------------- on_draw_jbd_cells -------------------
     def on_draw_jbd_cells(self, drawAreaJbdCells, ctx_jbd_cells):
         try:
-            ctx_jbd_cells.set_source_rgb(0.8, .8, .8)  # bar background color
-            ctx_jbd_cells.set_line_width(1)
-            cell_bar_width = 600/15
-            cell_bar_width_fill = cell_bar_width-5
-            cell_widget_height = 150
-
-            # log("SOC = " + str(self.data_holder.soc))
-            for i in range(0, 15):
-                if self.dat.jbd_cell_mv[i] is not None:
-
-                    if self.dat.jbd_bal[i]:
-                        ctx_jbd_cells.set_source_rgb(0, 255, 0)
-                    else:
-                        ctx_jbd_cells.set_source_rgb(0, 200, 200)
-                    bar_height = self.dat.jbd_cell_mv[i]/3.8*cell_widget_height
-                    ctx_jbd_cells.rectangle(int(i*cell_bar_width), cell_widget_height , cell_bar_width_fill, cell_widget_height - int(bar_height))
-                    ctx_jbd_cells.fill()
+            # ctx_jbd_cells.set_source_rgb(0.8, .8, .8)  # bar background color
+            # ctx_jbd_cells.set_line_width(1)
+            # cell_bar_width = 600/15
+            # cell_bar_width_fill = cell_bar_width-5
+            # cell_widget_height = 150
+            # #610,590, 610,730
+            # ctx_jbd_cells.set_source_rgb(10, 100, 220)
+            # for i in range(0, 15):
+            #     if self.dat.jbd_cell_mv[i] is not None:
+            #         if self.dat.jbd_bal[i]:
+            #             ctx_jbd_cells.set_source_rgb(20, 20, 20)
+            #         if self.dat.jbd_cell_mv[i] > 3.65 or self.dat.jbd_cell_mv[i] < 2.9:
+            #             ctx_jbd_cells.set_source_rgb(255, 10, 10)
+            #         bar_height = self.dat.jbd_cell_mv[i]/3.75*cell_widget_height
+            #         top_move = max(-1*cell_widget_height,(-1* int(bar_height)))
+            #         #print("i= "+str(i) + " bar_height: " + str(bar_height) + " top_move: " + str(top_move))
+            #         x1 = int(i*cell_bar_width)
+            #         y1 = cell_widget_height
+            #         x2 =cell_bar_width_fill
+            #         y2 = top_move
+            #         #print("x1: " + str(x1) + " y1: " + str(y1) + " x2: " + str(x2) + " y2: " + str(y2))
+            #         #ctx_jbd_cells.rectangle(x1, y1 , x2, y2)
+            #         ctx_jbd_cells.rectangle(400, 140, 100,-100)
+            #         ctx_jbd_cells.fill()
+            sleep(.1)
 
         except Exception as e:
             log("Exception - on_draw_jbd_cells: " + str(e))
@@ -2477,12 +2501,13 @@ class App:
             if self.dat.soc is not None:
                 # log("SOC = " + str(self.data_holder.soc))
 
-                pack1_capacity = 10000
-                pack2_capacity = self.dat.pack2_full_cap * 3.55*16 #total energy in watts
+                # -- fixme - these pack capacities should be read from the BMS and not hard coded here.
+                orion_pack_capacity = 10000
+                jbd_pack_capacity = self.dat.jbd_pack_full_cap * 3.55*16 #total energy in watts
                 #print(pack2_capacity)
 
 
-                total_bat_capacity = pack1_capacity + pack2_capacity
+                total_bat_capacity = orion_pack_capacity + jbd_pack_capacity
 
                 #DEBUG !@#
                 # self.dat.soc = 100
@@ -2514,7 +2539,7 @@ class App:
                     ctx_batsoc.stroke()  # bar color
                     #ctx_batsoc.fill()
 
-            bar_height_1 = (battery_widget_height-4) * int(self.dat.soc) / 100 * (pack1_capacity / total_bat_capacity)
+            bar_height_1 = (battery_widget_height-4) * int(self.dat.soc) / 100 * (orion_pack_capacity / total_bat_capacity)
             ctx_batsoc.rectangle(4, battery_widget_height-4, 104, -1*bar_height_1)
             ctx_batsoc.fill()
             # rectanle (x0,y0, x_span, y_span)
@@ -2547,7 +2572,7 @@ class App:
                 ctx_batsoc.stroke()  # bar color
                 # ctx_batsoc.fill()
 
-            bar_height_2 = (battery_widget_height-4-1) * int(self.dat.pack2_soc) / 100 * (pack2_capacity / total_bat_capacity)
+            bar_height_2 = (battery_widget_height-4-1) * int(self.dat.jbd_pack_soc) / 100 * (jbd_pack_capacity / total_bat_capacity)
             ctx_batsoc.rectangle(4, battery_widget_height-4-1-bar_height_1, 104, -1*bar_height_2)
             ctx_batsoc.fill()
         except Exception as e:
